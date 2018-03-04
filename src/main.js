@@ -8,6 +8,14 @@ let config = {
   height: 3*250,
   scaleMode: 1,
   pixelArt: true,
+  physics: {
+    default: 'arcade',
+    arcade: {
+      gravity: { y: 0 },
+      debug: false
+    }
+  },
+  backgroundColor: 0x212443,
   scene: [
     BootScene
   ]
