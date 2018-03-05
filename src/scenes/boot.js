@@ -102,8 +102,8 @@ class BootScene extends Phaser.Scene {
 
     this.player = new Player({
       scene: this,
-      x: xOffset + 8*scale*6+4,
-      y: yOffset + 8*scale*4+4
+      x: xOffset + 4 + (8 * scale * 6),
+      y: yOffset + 4 + (8 * scale * 4)
     })
 
     this.physics.add.collider(this.player.sprite, platforms)

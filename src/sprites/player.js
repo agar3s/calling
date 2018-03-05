@@ -5,7 +5,7 @@ export default class Player {
     let x = config.x
     let y = config.y
     this.sprite = scene.physics.add.sprite(x, y, 'tiles')
-    this.sprite.setScale(3*0.7).play('idle-red')
+    this.sprite.setScale(3 * 0.7).play('idle-red')
     this.speed = {x: 0, y: 0}
   }
 
@@ -18,12 +18,12 @@ export default class Player {
   }
 
   turnLeft () {
-    this.sprite.setScale((3*0.7), 3*0.7)
+    this.sprite.setScale((3 * 0.7), 3 * 0.7)
     this.speed.x = -80
   }
 
   turnRight () {
-    this.sprite.setScale(-1*(3*0.7), 3*0.7)
+    this.sprite.setScale(-1*(3 * 0.7), 3 * 0.7)
     this.speed.x = 80
   }
 
