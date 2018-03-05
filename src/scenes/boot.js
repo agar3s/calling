@@ -1,3 +1,5 @@
+import Player from '../sprites/player'
+import Control from '../util/control'
 
 let basicMap = 
 `-16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,16
@@ -15,10 +17,21 @@ let basicMap =
 -0,0,0,0,16,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 9,9,9,9,10,0,0,0,0,0,0,0,11,12,12,12,12,12,12,12`
 
-const KEYS = {
-  UP: 1,
+const ORDER_CODES = {
+  JUMP: 1,
   LEFT: 2,
-  RIGHT: 4
+  RIGHT: 3,
+  DOWN: 4,
+  JUMP_RIGHT: 5,
+  JUMP_LEFT: 6,
+  ATTACK: 7,
+  TALK: 8
+}
+
+const STATUS = {
+  WAITING: 0,
+  TRANSITION: 1,
+  DELAY: 2
 }
 
 class BootScene extends Phaser.Scene {
@@ -86,90 +99,82 @@ class BootScene extends Phaser.Scene {
     })
 
     this.add.sprite(xOffset + 8*scale*5+4, yOffset, 'tiles').setScale(scale).play('flying-blue')
-    this.player = this.physics.add.sprite(xOffset + 8*scale*6+4, yOffset + 8*scale*4+4, 'tiles')
-    this.player.setScale(scale*0.7).play('idle-red')
 
-    this.physics.add.collider(this.player, platforms)
+    this.player = new Player({
+      scene: this,
+      x: xOffset + 8*scale*6+4,
+      y: yOffset + 8*scale*4+4
+    })
+
+    this.physics.add.collider(this.player.sprite, platforms)
 
     // control
-    this.cursors = this.input.keyboard.createCursorKeys()
+    this.control = new Control({
+      scene: this
+    })
 
     // experimental turn based order
-    this.order = 0
+    this.status = STATUS.WAITING
     this.turnTransition = 0
-
-    this.turnUpdated = false
+    this.order = 0
   }
 
   update (time, dt) {
     this.turnTransition -= dt
-    if (this.turnTransition <= 0 && this.turnTransition > -150) {
-      this.turn = 0
-      if(this.turnUpdated) {
-        return
-      } 
 
-      if(this.player.body.velocity.y==0){
-        this.player.anims.play('idle-red')
-      }
-      this.player.setVelocityX(0)
-      this.player.setVelocityY(0)
-      this.player.setAccelerationY(0)
-      this.turnUpdated = true
-    } else if (this.turnTransition <= -150) {
-      let actionTaken = false
-      if (this.cursors.left.isDown) {
-        this.player.setAccelerationY(1000)
-        this.turnTransition = 300
-        this.order =  KEYS.LEFT
-        this.player.setScale((3*0.7), 3*0.7)
-        actionTaken = true
-      } else if (this.cursors.right.isDown) {
-        this.player.setAccelerationY(1000)
-        this.order =  KEYS.RIGHT
-        this.turnTransition = 300
-        this.player.setScale(-1*(3*0.7), 3*0.7)
-        actionTaken = true
-      }
-      if (this.cursors.up.isDown) {
-        this.player.setAccelerationY(1000)
-        if(!actionTaken) this.order = 0
-        this.order +=  KEYS.UP
-        this.turnTransition = 300
-        this.player.setVelocityY(-300)
-        actionTaken = true
-      }
-      if (this.cursors.down.isDown) {
-        this.player.setAccelerationY(1000)
-        this.turnTransition = 300
-        this.order = 0
-        actionTaken = true
-      }
-      if(actionTaken){
-        this.turnUpdated = false
+    if (this.status === STATUS.WAITING) {
+      // read keys
+      if (this.control.isUp()) {
+        this.order = ORDER_CODES.JUMP
+        this.player.jump()
+      } else if (this.control.isLeft()) {
+        this.order = ORDER_CODES.LEFT
+        this.player.turnLeft()
+      } else if (this.control.isRight()) {
+        this.order = ORDER_CODES.RIGHT
+        this.player.turnRight()
+      } else if (this.control.isDown()) {
+        this.order = ORDER_CODES.DOWN
+      } else if (this.control.isTalk()) {
+        this.order = ORDER_CODES.TALK
+      } else if (this.control.isAttack()) {
+        this.order = ORDER_CODES.ATTACK
+      } else if (this.control.isJumpLeft()) {
+        this.order = ORDER_CODES.JUMP_LEFT
+        this.player.jump()
+        this.player.turnLeft()
+      } else if (this.control.isJumpRight()) {
+        this.order = ORDER_CODES.JUMP_RIGHT
+        this.player.jump()
+        this.player.turnRight()
       }
 
-    } else {
-      if ((this.order & KEYS.LEFT) >0) {
-        this.player.setVelocityX(-80)
-        this.player.anims.play('flying-red', true)
-      } else if ((this.order & KEYS.RIGHT) >0) {
-        this.player.setVelocityX(80)
-        this.player.anims.play('flying-red', true)
-      } else {
-        this.player.setVelocityX(0)
+      if (this.order > 0) {
+        // take decisions
+        this.player.enableTime(1)
+        this.turnTransition = 300
+        this.status = STATUS.TRANSITION
       }
-      if ((this.order & KEYS.UP) >0) {
-        //this.player.setVelocityY(-80)
-        this.player.anims.play('flying-red', true)
-      }
-
+      return
     }
 
-    /*if (this.cursors.up.isDown && this.player.body.touching.down) {
-      console.log('ahh')
-      this.player.setVelocityY(-350)
-    }*/
+    if (this.status === STATUS.TRANSITION) {
+      this.player.update()
+
+      if (this.turnTransition < 0) {
+        this.turnTransition = 150
+        this.player.disableTime()
+        this.order = 0
+        this.status = STATUS.DELAY
+      }
+      return
+    }
+
+    if (this.status === STATUS.DELAY) {
+      if (this.turnTransition < 0) {
+        this.status = STATUS.WAITING
+      }
+    }
 
   }
 }
