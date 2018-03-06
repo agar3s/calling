@@ -1,4 +1,5 @@
 import Player from '../sprites/player'
+import Character from '../sprites/character'
 import Control from '../util/control'
 
 let basicMap = 
@@ -38,8 +39,11 @@ const ORDER_CODES = {
 const STATUS = {
   WAITING: 0,
   TRANSITION: 1,
-  DELAY: 2
+  DELAY: 2,
+  PROCESSING: 3
 }
+
+const TIME_TO_ANIMATE = 300
 
 class BootScene extends Phaser.Scene {
   constructor(test) {
@@ -59,7 +63,7 @@ class BootScene extends Phaser.Scene {
     let padding = 1
     let ts = 16 // tileSize
     
-    let platforms = this.physics.add.staticGroup()
+    let platforms = this.add.group()
 
     let xOffset = ts*scale
     let yOffset = ts*scale
@@ -73,11 +77,7 @@ class BootScene extends Phaser.Scene {
         let x = xOffset + i * (ts * scale + padding)
         let tile = row[i]
         let invert = (tile < 0)?-1:1
-        if ([0, 1, 2, 3].indexOf(invert*tile)!=-1) {
-          platforms.create(x, y, 'platforms', tile * invert).setScale(scale, scale).refreshBody().setScale(invert * scale, scale)
-        } else {
-          this.add.tileSprite(x, y, ts, ts, 'platforms', tile * invert).setScale(invert * scale, scale)
-        }
+        this.add.tileSprite(x, y, ts, ts, 'platforms', tile * invert).setScale(invert * scale, scale)
       }
     }
 
@@ -101,15 +101,19 @@ class BootScene extends Phaser.Scene {
       frames: [{key: 'characters', frame: 0}]
     })
 
-    this.add.sprite(xOffset + 8*scale*5+4, yOffset, 'characters').setScale(scale).play('flying-blue')
-
     this.player = new Player({
       scene: this,
       x: xOffset + 16 + (16 * scale * 6),
-      y: yOffset + 16 + (16 * scale * 2)
+      y: yOffset + 16 + (16 * scale * 2),
+      animations: ['idle-red']
     })
 
-    this.physics.add.collider(this.player.sprite, platforms)
+    this.npc = new Character({
+      scene: this,
+      x: xOffset + 16 + (16 * scale * 8),
+      y: yOffset + 16 + (16 * scale * 1),
+      animations: ['flying-blue']
+    })
 
     // control
     this.control = new Control({
@@ -129,7 +133,6 @@ class BootScene extends Phaser.Scene {
     this.turnTransition -= dt
 
     if (this.status === STATUS.WAITING) {
-      let TIME_TO_ANIMATE = 300
       // read keys
       if (this.control.isUp()) {
         this.order = ORDER_CODES.JUMP
@@ -157,25 +160,22 @@ class BootScene extends Phaser.Scene {
         this.player.turnRight(TIME_TO_ANIMATE)
       }
 
-      if (this.order > 0) {
-        // take decisions
-        this.player.enableTime(TIME_TO_ANIMATE, 1)
-        this.turnTransition = 300
-        this.status = STATUS.TRANSITION
+      if (this.order > 0) {        
+        this.status = STATUS.PROCESSING
+        setTimeout(() => {
+          this.processTurn()  
+        }, 1)
       }
       return
     }
 
     if (this.status === STATUS.TRANSITION) {
-
       if (this.turnTransition < 0) {
-        this.player.update()
+        this.endTurn()
         this.turnTransition = 150
-        this.player.disableTime()
-        this.order = 0
         this.status = STATUS.DELAY
       } else {
-        this.player.update(dt)
+        this.updateTurn(dt)
       }
       return
     }
@@ -185,6 +185,31 @@ class BootScene extends Phaser.Scene {
         this.status = STATUS.WAITING
       }
     }
+  }
+
+  processTurn () {
+    //verify order enter by user, update enemies orders
+    this.player.enableTime(TIME_TO_ANIMATE, 1)
+
+    // update enemies
+    this.npc.enableTime(TIME_TO_ANIMATE, 1)
+
+    this.turnTransition = TIME_TO_ANIMATE
+    this.status = STATUS.TRANSITION
+  }
+
+  endTurn () {
+    this.player.update()
+    this.player.disableTime()
+    this.order = 0
+
+    this.npc.update()
+    this.npc.disableTime()
+  }
+
+  updateTurn (dt) {
+    this.player.update(dt)
+    this.npc.update(dt)
   }
 
 }

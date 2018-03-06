@@ -20,12 +20,13 @@ export default class Character {
     this.timeFromTransition = 0
     this.fixedTimeForTransition = 0
     this.attributes = new Attributes({})
+    this.animations = config.animations
+    this.sprite.setScale(SCALE).play(this.animations[0])
   }
 
   update (dt) {
     if(!dt) {
       dt = this.fixedTimeForTransition - this.timeFromTransition
-      console.log(dt)
     }
     this.timeFromTransition += dt
     this.speed.y += this.acceleration.y * dt

@@ -17,7 +17,6 @@ export default class Player extends Character{
       }
     }
     this.grid.closePath()
-    this.sprite.setScale(SCALE).play('idle-red')
   }
 
 
