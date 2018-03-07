@@ -68,7 +68,7 @@ export default class Character {
     if (!c){
       this.speed.x = -WIDTH*SCALE*steps/transitionTime
     }
-    if ((!c&&!d)||(c&&!e)) {
+    if ((!c&&!d) || (c&&!e)) {
       this.fall(transitionTime, 1)
     }
   }
@@ -86,7 +86,7 @@ export default class Character {
     if (!c){
       this.speed.x = WIDTH*SCALE*steps/transitionTime
     }
-    if ((!c&&!d)||(c&&!e)) {
+    if ((!c&&!d) || (c&&!e)) {
       this.fall(transitionTime, 1)
     }
   }
@@ -105,7 +105,7 @@ export default class Character {
       let yDistance = (-gravityDistance/2)*WIDTH*SCALE
       this.speed.y = yDistance/transitionTime
       this.fall(transitionTime, 1)
-      if(!b){
+      if (!b) {
         this.speed.x = -WIDTH*SCALE*steps/transitionTime
       }
     }
