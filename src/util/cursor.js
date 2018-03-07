@@ -1,7 +1,7 @@
 
 const SCALE = 2
 const WIDTH = 16
-export default class Target {
+export default class Cursor {
   constructor (config) {
     this.show = false
     this.positionIndex = {i: 0, j: 0}
@@ -13,7 +13,7 @@ export default class Target {
     this.anchor = {i: 0, j: 0}
   }
 
-  hideTarget () {
+  hide () {
     this.square.clear()
   }
 

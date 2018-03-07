@@ -1,7 +1,7 @@
 import Player from '../sprites/player'
 import Character from '../sprites/character'
 import Control from '../util/control'
-import Target from '../util/target'
+import Cursor from '../util/cursor'
 
 let basicMap = 
 `8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
@@ -146,7 +146,7 @@ class BootScene extends Phaser.Scene {
     })
 
     // target cursor
-    this.target = new Target({
+    this.cursor = new Cursor({
       scene: this
     })
 
@@ -174,7 +174,7 @@ class BootScene extends Phaser.Scene {
       } else if (this.control.isTalk()) {
         //this.order = ORDER_CODES.TALK
       } else if (this.control.isAttack()) {
-        this.showTarget()
+        this.showCursor()
         //this.order = ORDER_CODES.ATTACK
       } else if (this.control.isJumpLeft()) {
         this.setOrder(ORDER_CODES.JUMP_LEFT)
@@ -197,22 +197,22 @@ class BootScene extends Phaser.Scene {
     if (this.status === STATUS.TARGETING) {
       let actionTaken = true
       if (this.control.isUp()) {
-        this.target.move(0, -1)
+        this.cursor.move(0, -1)
       } else if (this.control.isLeft()) {
-        this.target.move(-1, 0)
+        this.cursor.move(-1, 0)
       } else if (this.control.isRight()) {
-        this.target.move(1, 0)
+        this.cursor.move(1, 0)
       } else if (this.control.isDown()) {
-        this.target.move(0, 1)
+        this.cursor.move(0, 1)
       } else if (this.control.isJumpLeft()) {
-        this.target.move(-1, -1)
+        this.cursor.move(-1, -1)
       } else if (this.control.isJumpRight()) {
-        this.target.move(1, -1)
+        this.cursor.move(1, -1)
       } else if (this.control.isTalk()) {
         //this.order = ORDER_CODES.TALK
       } else if (this.control.isAttack()) {
         this.setOrder(ORDER_CODES.ATTACK)
-        this.target.hideTarget()
+        this.cursor.hide()
       } else {
         actionTaken = false
       }
@@ -237,9 +237,9 @@ class BootScene extends Phaser.Scene {
     }, 1)
   }
 
-  showTarget () {
+  showCursor () {
     this.delayTransition(STATUS.TARGETING, 150)
-    this.target.setPosition(this.player.positionIndex.i, this.player.positionIndex.j)
+    this.cursor.setPosition(this.player.positionIndex.i, this.player.positionIndex.j)
   }
 
   delayTransition (newStatus, delayTime) {
@@ -276,12 +276,12 @@ class BootScene extends Phaser.Scene {
         this.player.pass(TIME_TO_ANIMATE, cells)
       break
       case ORDER_CODES.ATTACK:
-        let pos = {i: this.target.positionIndex.i, j: this.target.positionIndex.j}
+        let pos = {i: this.cursor.positionIndex.i, j: this.cursor.positionIndex.j}
         let attack = this.player.getAttackData()
         if (attack.type === 'melee') {  // apply hit inmediatily
-          let target = this.getElementInMap(pos.i, pos.j)
+          let cursor = this.getElementInMap(pos.i, pos.j)
           this.player.attack(TIME_TO_ANIMATE)
-          this.applyAttack(target, attack)
+          this.applyAttack(cursor, attack)
         }
       break
     }
