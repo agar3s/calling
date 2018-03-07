@@ -6,7 +6,6 @@ const WIDTH = 16
 export default class Player extends Character{
   constructor (config) {
     super(config)
-
   }
 
 

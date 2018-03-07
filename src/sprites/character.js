@@ -21,9 +21,8 @@ export default class Character {
     this.fixedTimeForTransition = 0
     this.attributes = new Attributes({})
     this.animations = config.animations
-    this.sprite.setScale(SCALE).play(this.animations[0])
-
-      this.actionRange = 2
+    this.sprite.setScale(SCALE).play(this.animations.idle)
+    this.actionRange = 2
   }
 
   update (dt) {
@@ -36,18 +35,40 @@ export default class Character {
     this.sprite.y +=  this.speed.y*dt
   }
 
+  applyJumpSpeed (transitionTime) {
+    // vy = (h2 - h1) / t
+    let gravityDistance = 3
+    let yDistance = (-gravityDistance/2)*WIDTH*SCALE
+    this.speed.y = yDistance/transitionTime
+    
+    this.fall(transitionTime, 1)
+  }
+
+  applyLateralSpeed (transitionTime, surrondings, direction) {
+    this.sprite.setScale(direction*(SCALE), SCALE)
+    let center = this.actionRange
+    let steps = 1
+    let c = surrondings[center][center + direction]
+    let d = surrondings[center + 1][center + direction]
+    let e = surrondings[center + 1][center]
+    c = c && c.rigid
+    d = d && d.rigid
+    e = e && e.rigid
+    if (!c){
+      this.speed.x = direction*WIDTH*SCALE*steps/transitionTime
+    }
+    if ((!c&&!d) || (c&&!e)) {
+      this.fall(transitionTime, 1)
+    }
+  }
+
   jump (transitionTime, surrondings) {
     let center = this.actionRange
     let steps = 1
     let a = surrondings[center - 1][center]
     a = a && a.rigid
     if (!a) {
-      // vy = (h2 - h1) / t
-      let gravityDistance = 3
-      let yDistance = (-gravityDistance/2)*WIDTH*SCALE
-      this.speed.y = yDistance/transitionTime
-
-      this.fall(transitionTime, 1)
+      this.applyJumpSpeed(transitionTime)
     }
   }
 
@@ -56,81 +77,36 @@ export default class Character {
   }
 
   turnLeft (transitionTime, surrondings) {
-    this.sprite.setScale(-1*(SCALE), SCALE)
-    let center = this.actionRange
-    let steps = 1
-    let c = surrondings[center][center - 1]
-    let d = surrondings[center + 1][center - 1]
-    let e = surrondings[center + 1][center]
-    c = c && c.rigid
-    d = d && d.rigid
-    e = e && e.rigid
-    if (!c){
-      this.speed.x = -WIDTH*SCALE*steps/transitionTime
-    }
-    if ((!c&&!d) || (c&&!e)) {
-      this.fall(transitionTime, 1)
-    }
+    this.applyLateralSpeed(transitionTime, surrondings, -1)
   }
 
   turnRight (transitionTime, surrondings) {
-    this.sprite.setScale(1*(SCALE), SCALE)
+    this.applyLateralSpeed(transitionTime, surrondings, 1)
+  }
+
+  applyJumpLateral (transitionTime, surrondings, direction) {
+    this.sprite.setScale(direction*(SCALE), SCALE)
     let center = this.actionRange
     let steps = 1
-    let c = surrondings[center][center + 1]
-    let d = surrondings[center + 1][center + 1]
-    let e = surrondings[center + 1][center]
-    c = c && c.rigid
-    d = d && d.rigid
-    e = e && e.rigid
-    if (!c){
-      this.speed.x = WIDTH*SCALE*steps/transitionTime
-    }
-    if ((!c&&!d) || (c&&!e)) {
-      this.fall(transitionTime, 1)
+    let a = surrondings[center - 1][center]
+    let b = surrondings[center - 1][center + direction]
+    a = a && a.rigid
+    b = b && b.rigid
+    if (!a) {
+      this.applyJumpSpeed(transitionTime)
+      if (!b) {
+        this.speed.x = direction*WIDTH*SCALE*steps/transitionTime
+      }
     }
   }
 
   jumpLeft (transitionTime, surrondings) {
-    this.sprite.setScale(-1*(SCALE), SCALE)
-    let center = this.actionRange
-    let steps = 1
-    let a = surrondings[center - 1][center]
-    let b = surrondings[center - 1][center - 1]
-    a = a && a.rigid
-    b = b && b.rigid
-    if (!a) {
-      // vy = (h2 - h1) / t
-      let gravityDistance = 3
-      let yDistance = (-gravityDistance/2)*WIDTH*SCALE
-      this.speed.y = yDistance/transitionTime
-      this.fall(transitionTime, 1)
-      if (!b) {
-        this.speed.x = -WIDTH*SCALE*steps/transitionTime
-      }
-    }
+    this.applyJumpLateral(transitionTime, surrondings, -1)
   }
 
   jumpRight (transitionTime, surrondings) {
-    this.sprite.setScale(1*(SCALE), SCALE)
-    let center = this.actionRange
-    let steps = 1
-    let a = surrondings[center - 1][center]
-    let b = surrondings[center - 1][center + 1]
-    a = a && a.rigid
-    b = b && b.rigid
-    if (!a) {
-      // vy = (h2 - h1) / t
-      let gravityDistance = 3
-      let yDistance = (-gravityDistance/2)*WIDTH*SCALE
-      this.speed.y = yDistance/transitionTime
-      this.fall(transitionTime, 1)
-      if (!b) {
-        this.speed.x = WIDTH*SCALE*steps/transitionTime
-      }
-    }
+    this.applyJumpLateral(transitionTime, surrondings, 1)
   }
-
 
   fall(transitionTime, cellsToFall) {
     this.acceleration.y = WIDTH*SCALE*(cellsToFall)/(transitionTime*transitionTime)
@@ -142,6 +118,8 @@ export default class Character {
     e = e && e.rigid
     if (!e) {
       this.fall(transitionTime, 1)
+    } else {
+      this.sprite.anims.play(this.animations.idle)
     }
   }
 
@@ -163,9 +141,6 @@ export default class Character {
   }
 
   disableTime () {
-   // if (this.sprite.body.velocity.y === 0) {
-   //   this.sprite.anims.play('idle-red')
-   // }
     this.fixPositionToGrid()
     this.speed.x = 0
     this.speed.y = 0
