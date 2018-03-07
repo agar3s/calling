@@ -6,10 +6,10 @@ let basicMap =
 `8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
 8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
 8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
-8,8,8,8,8,8,0,1,1,2,8,0,1,1,2,8,8,8,8,8
-8,8,8,8,8,8,0,6,6,2,8,0,6,6,2,8,8,8,8,8
-8,8,8,8,3,4,0,6,6,2,8,0,6,6,2,8,8,8,8,8
-8,8,8,8,8,9,0,6,6,2,8,0,6,6,2,8,8,8,8,8
+1,2,8,8,8,8,0,1,1,2,8,0,1,1,2,8,8,8,8,8
+2,2,8,8,8,8,0,6,6,2,8,0,6,6,2,8,8,8,8,8
+2,8,8,8,3,4,0,6,6,2,8,0,6,6,2,8,8,8,8,8
+2,8,8,8,8,9,0,6,6,2,8,0,6,6,2,8,8,8,8,8
 1,1,1,1,1,1,5,6,6,2,8,0,6,6,7,1,1,1,1,1
 8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
 8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
@@ -65,14 +65,14 @@ class BootScene extends Phaser.Scene {
     
     let platforms = this.add.group()
 
-    let xOffset = ts*scale
-    let yOffset = ts*scale
+    let xOffset = 0
+    let yOffset = 0
     
     padding = 0
-    let map = basicMap.split('\n').map(row => row.split(',').map(tile => parseInt(tile)))
-    for (var j = 0; j < map.length; j++) {
+    this.map = basicMap.split('\n').map(row => row.split(',').map(tile => parseInt(tile)))
+    for (var j = 0; j < this.map.length; j++) {
       let y = yOffset + j * (ts * scale + padding)
-      let row = map[j]
+      let row = this.map[j]
       for (var i = 0; i < row.length; i++) {
         let x = xOffset + i * (ts * scale + padding)
         let tile = row[i]
@@ -80,7 +80,19 @@ class BootScene extends Phaser.Scene {
         this.add.tileSprite(x, y, ts, ts, 'platforms', tile * invert).setScale(invert * scale, scale)
       }
     }
-
+    
+    let SCALE = 2
+    let WIDTH = 16
+    this.grid = this.add.graphics(0,0)
+    this.grid.lineStyle(0x220022, 1)
+    this.grid.fillStyle(0x220022, 0.2)
+    this.grid.beginPath()
+    for (var j = 0; j < 50; j++) {
+      for (var i = 0; i < 50; i++) {
+        this.grid.fillRect(i*SCALE*WIDTH + 1 - SCALE*WIDTH/2, j*SCALE*WIDTH + 1 - SCALE*WIDTH/2, SCALE*WIDTH - 2, SCALE*WIDTH - 2)
+      }
+    }
+    this.grid.closePath()
 
     this.anims.create({
       key: 'flying-blue',
@@ -128,7 +140,6 @@ class BootScene extends Phaser.Scene {
 
   }
 
-
   update (time, dt) {
     this.turnTransition -= dt
 
@@ -136,28 +147,20 @@ class BootScene extends Phaser.Scene {
       // read keys
       if (this.control.isUp()) {
         this.order = ORDER_CODES.JUMP
-        this.player.jump(TIME_TO_ANIMATE)
       } else if (this.control.isLeft()) {
         this.order = ORDER_CODES.LEFT
-        this.player.turnLeft(TIME_TO_ANIMATE)
       } else if (this.control.isRight()) {
         this.order = ORDER_CODES.RIGHT
-        this.player.turnRight(TIME_TO_ANIMATE)
       } else if (this.control.isDown()) {
         this.order = ORDER_CODES.DOWN
-        this.player.down(TIME_TO_ANIMATE)
       } else if (this.control.isTalk()) {
         this.order = ORDER_CODES.TALK
       } else if (this.control.isAttack()) {
         this.order = ORDER_CODES.ATTACK
       } else if (this.control.isJumpLeft()) {
         this.order = ORDER_CODES.JUMP_LEFT
-        this.player.jump(TIME_TO_ANIMATE)
-        this.player.turnLeft(TIME_TO_ANIMATE)
       } else if (this.control.isJumpRight()) {
         this.order = ORDER_CODES.JUMP_RIGHT
-        this.player.jump(TIME_TO_ANIMATE)
-        this.player.turnRight(TIME_TO_ANIMATE)
       }
 
       if (this.order > 0) {        
@@ -188,8 +191,36 @@ class BootScene extends Phaser.Scene {
   }
 
   processTurn () {
-    //verify order enter by user, update enemies orders
+    //verify order entered by user, update enemies orders
+    let cells = this.getMapSurrondings(this.player.positionIndex.i, this.player.positionIndex.j, this.player.actionRange)
+    switch(this.order) {
+      case ORDER_CODES.JUMP:
+        this.player.jump(TIME_TO_ANIMATE, cells)
+      break
+      case ORDER_CODES.LEFT:
+        this.player.turnLeft(TIME_TO_ANIMATE, cells)
+      break
+      case ORDER_CODES.RIGHT:
+        this.player.turnRight(TIME_TO_ANIMATE, cells)
+      break
+      case ORDER_CODES.DOWN:
+        this.player.down(TIME_TO_ANIMATE)
+      break
+      case ORDER_CODES.TALK:
+      break
+      case ORDER_CODES.ATTACK:
+      break
+      case ORDER_CODES.JUMP_LEFT:
+        this.player.jumpLeft(TIME_TO_ANIMATE, cells)
+      break
+      case ORDER_CODES.JUMP_RIGHT:
+        this.player.jumpRight(TIME_TO_ANIMATE, cells)
+      break
+    }
+
+    this.player.applyUpdates(TIME_TO_ANIMATE, cells)
     this.player.enableTime(TIME_TO_ANIMATE, 1)
+
 
     // update enemies
     this.npc.enableTime(TIME_TO_ANIMATE, 1)
@@ -208,10 +239,38 @@ class BootScene extends Phaser.Scene {
   }
 
   updateTurn (dt) {
+    // check collisions...?
     this.player.update(dt)
+
     this.npc.update(dt)
   }
 
+  getMapSurrondings(indexI, indexJ, range) {
+    let map = []
+    let row = -1
+    for (var j = indexJ - range; j <= indexJ + range; j++) {
+      map.push((new Array(range * 2 + 1)).fill(undefined))
+      let col = -1
+      row++
+      if(j < 0) continue
+      for (var i = indexI - range; i <= indexI + range; i++) {
+        col++
+        if(i < 0) continue
+        map[row][col] = this.getTileProperties(this.map[j][i])
+      }
+    }
+    return map
+  }
+
+  getTileProperties (type) {
+    let properties = {
+      rigid: true
+    }
+    if([8].indexOf(type)!=-1) {
+      properties.rigid = false
+    }
+    return properties
+  }
 }
 
 export default BootScene
