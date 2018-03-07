@@ -120,12 +120,19 @@ class BootScene extends Phaser.Scene {
       animations: ['idle-red']
     })
 
-    this.npc = new Character({
-      scene: this,
-      x: xOffset + 16 + (16 * scale * 8),
-      y: yOffset + 16 + (16 * scale * 1),
-      animations: ['flying-blue']
-    })
+    this.npcs = []
+
+    for (var i = 0; i< 10; i++) {
+      let xi = ~~(Math.random()*16) + 2
+      let yi = ~~(Math.random()*16)
+      let npc = new Character({
+        scene: this,
+        x: xOffset + 16 + (16 * scale * xi),
+        y: yOffset + 16 + (16 * scale * yi),
+        animations: ['flying-blue']
+      })
+      this.npcs.push(npc)
+    }
 
     // control
     this.control = new Control({
@@ -203,27 +210,35 @@ class BootScene extends Phaser.Scene {
       case ORDER_CODES.RIGHT:
         this.player.turnRight(TIME_TO_ANIMATE, cells)
       break
-      case ORDER_CODES.DOWN:
-        this.player.down(TIME_TO_ANIMATE)
-      break
-      case ORDER_CODES.TALK:
-      break
-      case ORDER_CODES.ATTACK:
-      break
       case ORDER_CODES.JUMP_LEFT:
         this.player.jumpLeft(TIME_TO_ANIMATE, cells)
       break
       case ORDER_CODES.JUMP_RIGHT:
         this.player.jumpRight(TIME_TO_ANIMATE, cells)
       break
+      case ORDER_CODES.DOWN:
+        this.player.down(TIME_TO_ANIMATE)
+        this.player.pass(TIME_TO_ANIMATE, cells)
+      break
+      case ORDER_CODES.TALK:
+        console.log('pass')
+        this.player.pass(TIME_TO_ANIMATE, cells)
+      break
+      case ORDER_CODES.ATTACK:
+        this.player.pass(TIME_TO_ANIMATE, cells)
+      break
     }
 
-    this.player.applyUpdates(TIME_TO_ANIMATE, cells)
+    //this.player.applyUpdates(TIME_TO_ANIMATE, cells)
     this.player.enableTime(TIME_TO_ANIMATE, 1)
 
 
     // update enemies
-    this.npc.enableTime(TIME_TO_ANIMATE, 1)
+    this.npcs.forEach(npc => {      
+      let npcCells = this.getMapSurrondings(npc.positionIndex.i, npc.positionIndex.j, npc.actionRange)
+      npc.pass(TIME_TO_ANIMATE, npcCells)
+      npc.enableTime(TIME_TO_ANIMATE, 1)
+    })
 
     this.turnTransition = TIME_TO_ANIMATE
     this.status = STATUS.TRANSITION
@@ -234,15 +249,18 @@ class BootScene extends Phaser.Scene {
     this.player.disableTime()
     this.order = 0
 
-    this.npc.update()
-    this.npc.disableTime()
+    this.npcs.forEach(npc => {
+      npc.update()
+      npc.disableTime()
+    })
   }
 
   updateTurn (dt) {
     // check collisions...?
     this.player.update(dt)
-
-    this.npc.update(dt)
+    this.npcs.forEach(npc => {
+      npc.update(dt)
+    })
   }
 
   getMapSurrondings(indexI, indexJ, range) {

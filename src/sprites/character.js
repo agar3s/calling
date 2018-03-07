@@ -37,20 +37,18 @@ export default class Character {
   }
 
   jump (transitionTime, surrondings) {
-    for (var i = 0; i < surrondings.length; i++) {
-      console.log(surrondings[i].map(s=>s?s.rigid:true))
-    }
     let center = this.actionRange
-    let desiredHigh = 2
-    if(!surrondings[center-1][center] || surrondings[center-1][center].rigid) {
-      desiredHigh = 0
-    } else if(!surrondings[center-2][center] || surrondings[center-2][center].rigid) {
-      desiredHigh = 1
+    let steps = 1
+    let a = surrondings[center - 1][center]
+    a = a && a.rigid
+    if (!a) {
+      // vy = (h2 - h1) / t
+      let gravityDistance = 3
+      let yDistance = (-gravityDistance/2)*WIDTH*SCALE
+      this.speed.y = yDistance/transitionTime
+
+      this.fall(transitionTime, 1)
     }
-    // vy = (h2 - h1) / t
-    let gravityDistance = 3
-    let yDistance = (-desiredHigh - gravityDistance/2)*WIDTH*SCALE
-    this.speed.y = yDistance/transitionTime
   }
 
   down (transitionTime) {
@@ -61,83 +59,90 @@ export default class Character {
     this.sprite.setScale(-1*(SCALE), SCALE)
     let center = this.actionRange
     let steps = 1
-    if(!surrondings[center][center-1] || surrondings[center][center-1].rigid) {
-      steps = 0
-    } else if((!surrondings[center+1][center] || !surrondings[center+1][center].rigid) && (!surrondings[center+1][center-1] || surrondings[center+1][center-1].rigid)) {
-      steps = 0
+    let c = surrondings[center][center - 1]
+    let d = surrondings[center + 1][center - 1]
+    let e = surrondings[center + 1][center]
+    c = c && c.rigid
+    d = d && d.rigid
+    e = e && e.rigid
+    if (!c){
+      this.speed.x = -WIDTH*SCALE*steps/transitionTime
     }
-    this.speed.x = -WIDTH*SCALE*steps/transitionTime
+    if ((!c&&!d)||(c&&!e)) {
+      this.fall(transitionTime, 1)
+    }
   }
 
   turnRight (transitionTime, surrondings) {
-    this.sprite.setScale((SCALE), SCALE)
+    this.sprite.setScale(1*(SCALE), SCALE)
     let center = this.actionRange
     let steps = 1
-    if(!surrondings[center][center+1] || surrondings[center][center+1].rigid) {
-      steps = 0
-    } else if((!surrondings[center+1][center] || !surrondings[center+1][center].rigid) && (!surrondings[center+1][center+1] || surrondings[center+1][center+1].rigid)) {
-      steps = 0
+    let c = surrondings[center][center + 1]
+    let d = surrondings[center + 1][center + 1]
+    let e = surrondings[center + 1][center]
+    c = c && c.rigid
+    d = d && d.rigid
+    e = e && e.rigid
+    if (!c){
+      this.speed.x = WIDTH*SCALE*steps/transitionTime
     }
-
-    this.speed.x = WIDTH*SCALE*steps/transitionTime
+    if ((!c&&!d)||(c&&!e)) {
+      this.fall(transitionTime, 1)
+    }
   }
 
   jumpLeft (transitionTime, surrondings) {
-    for (var i = 0; i < surrondings.length; i++) {
-      console.log(surrondings[i].map(s=>s?s.rigid:true))
-    }
-    let center = this.actionRange
-    let desiredHigh = 2
-    if(!surrondings[center-1][center] || surrondings[center-1][center].rigid) {
-      desiredHigh = 0
-    } else if(!surrondings[center-2][center-1] || surrondings[center-2][center-1].rigid) {
-      desiredHigh = 1
-    }
-    // vy = (h2 - h1) / t
-    let gravityDistance = 3
-    let yDistance = (-desiredHigh - gravityDistance/2)*WIDTH*SCALE
-    this.speed.y = yDistance/transitionTime
-
     this.sprite.setScale(-1*(SCALE), SCALE)
-    this.speed.x = -WIDTH*SCALE/transitionTime
+    let center = this.actionRange
+    let steps = 1
+    let a = surrondings[center - 1][center]
+    let b = surrondings[center - 1][center - 1]
+    a = a && a.rigid
+    b = b && b.rigid
+    if (!a) {
+      // vy = (h2 - h1) / t
+      let gravityDistance = 3
+      let yDistance = (-gravityDistance/2)*WIDTH*SCALE
+      this.speed.y = yDistance/transitionTime
+      this.fall(transitionTime, 1)
+      if(!b){
+        this.speed.x = -WIDTH*SCALE*steps/transitionTime
+      }
+    }
   }
 
   jumpRight (transitionTime, surrondings) {
-    for (var i = 0; i < surrondings.length; i++) {
-      console.log(surrondings[i].map(s=>s?s.rigid:true))
-    }
+    this.sprite.setScale(1*(SCALE), SCALE)
     let center = this.actionRange
-    let desiredHigh = 2
-    if(!surrondings[center-1][center] || surrondings[center-1][center].rigid) {
-      desiredHigh = 0
-    } else if(!surrondings[center-2][center+1] || surrondings[center-2][center+1].rigid) {
-      desiredHigh = 1
+    let steps = 1
+    let a = surrondings[center - 1][center]
+    let b = surrondings[center - 1][center + 1]
+    a = a && a.rigid
+    b = b && b.rigid
+    if (!a) {
+      // vy = (h2 - h1) / t
+      let gravityDistance = 3
+      let yDistance = (-gravityDistance/2)*WIDTH*SCALE
+      this.speed.y = yDistance/transitionTime
+      this.fall(transitionTime, 1)
+      if (!b) {
+        this.speed.x = WIDTH*SCALE*steps/transitionTime
+      }
     }
-    // vy = (h2 - h1) / t
-    let gravityDistance = 3
-    let yDistance = (-desiredHigh - gravityDistance/2)*WIDTH*SCALE
-    this.speed.y = yDistance/transitionTime
-
-    this.sprite.setScale((SCALE), SCALE)
-    this.speed.x = WIDTH*SCALE/transitionTime
   }
 
-  applyUpdates (transitionTime, surrondings) {
-    let cellsToFall = 3
-    let center = this.actionRange
-    if(this.speed.y<0){
-      cellsToFall = 3
-    }else if(!surrondings[center+1][center] || surrondings[center+1][center].rigid) {
-      cellsToFall = 0
-    } else if(!surrondings[center+2][center] || surrondings[center+2][center].rigid) {
-      cellsToFall = 1
-    }
-    this.fall(transitionTime, cellsToFall)
-  }
 
   fall(transitionTime, cellsToFall) {
     this.acceleration.y = WIDTH*SCALE*(cellsToFall)/(transitionTime*transitionTime)
-    
+  }
+
+  pass (transitionTime, surrondings) {
+    let center = this.actionRange
+    let e = surrondings[center + 1][center]
+    e = e && e.rigid
+    if (!e) {
+      this.fall(transitionTime, 1)
+    }
   }
 
   enableTime (transitionTime, factor) {
