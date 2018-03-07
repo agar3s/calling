@@ -2,33 +2,7 @@ import Player from '../sprites/player'
 import Character from '../sprites/character'
 import Control from '../util/control'
 import Cursor from '../util/cursor'
-
-let basicMap = 
-`8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
-8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
-8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
-8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
-8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
-1,2,8,8,8,8,0,1,1,2,8,0,1,1,2,8,8,8,8,8
-2,2,8,8,8,8,0,6,6,2,8,0,6,6,2,8,8,8,8,8
-2,8,8,8,3,4,0,6,6,2,8,0,6,6,2,8,8,8,8,8
-2,8,8,8,8,9,0,6,6,2,8,0,6,6,2,8,8,8,8,8
-1,1,1,1,1,1,5,6,6,2,8,0,6,6,7,1,1,1,1,1
-8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
-8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
-8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
-1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,8,8,8,0
-8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,0,6
-8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,0,6
-8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,0,6,6
-8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,0,6,6,6
-8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,0,6,6,6
-8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,0,6,6,6,6
-1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,5,6,6,6,6
-6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
-6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
-6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
-6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6`
+import Map from '../dungeon/map'
 
 const ORDER_CODES = {
   JUMP: 1,
@@ -64,41 +38,21 @@ class BootScene extends Phaser.Scene {
     this.load.spritesheet('ui', '../assets/ui.png', {frameWidth: 32, frameHeight: 32})
   }
 
-  create () {
-    let scale = 2
-    let padding = 1
-    let ts = 16 // tileSize
-    
-    let platforms = this.add.group()
-
-    let xOffset = 0
-    let yOffset = 0
-    
-    padding = 0
-    this.map = basicMap.split('\n').map(row => row.split(',').map(tile => parseInt(tile)))
-    for (var j = 0; j < this.map.length; j++) {
-      let y = yOffset + j * (ts * scale + padding)
-      let row = this.map[j]
-      for (var i = 0; i < row.length; i++) {
-        let x = xOffset + i * (ts * scale + padding)
-        let tile = row[i]
-        let invert = (tile < 0)?-1:1
-        this.add.tileSprite(x, y, ts, ts, 'platforms', tile * invert).setScale(invert * scale, scale)
-      }
-    }
-    
+  create () {   
     let SCALE = 2
     let WIDTH = 16
     let TS = SCALE*WIDTH // TileSize
-    this.grid = this.add.graphics(0,0)
-    this.grid.lineStyle(1, 0x220022, 0.05)
-    this.grid.fillStyle(0x220022, 0.05)
-    for (var j = 0; j < 50; j++) {
-      for (var i = 0; i < 50; i++) {
-        //this.grid.fillRect(i*SCALE*WIDTH + 1 - SCALE*WIDTH/2, j*SCALE*WIDTH + 1 - SCALE*WIDTH/2, SCALE*WIDTH - 2, SCALE*WIDTH - 2)
-        this.grid.strokeRect(i*TS - TS/2, j*TS - TS/2, TS, TS)
-      }
-    }
+    let xOffset = 0
+    let yOffset = 0
+    
+    this.map = new Map({
+      scene: this,
+      scale: SCALE,
+      width: WIDTH,
+      xOffset: xOffset,
+      yOffset: yOffset
+    })
+    
 
     this.anims.create({
       key: 'flying-blue',
@@ -121,8 +75,8 @@ class BootScene extends Phaser.Scene {
 
     this.player = new Player({
       scene: this,
-      x: xOffset + 16 + (16 * scale * 6),
-      y: yOffset + 16 + (16 * scale * 2),
+      x: xOffset + 16 + (16 * SCALE * 6),
+      y: yOffset + 16 + (16 * SCALE * 2),
       animations: {idle: 'idle-red'}
     })
 
@@ -133,8 +87,8 @@ class BootScene extends Phaser.Scene {
       let yi = ~~(Math.random()*16)
       let npc = new Character({
         scene: this,
-        x: xOffset + 16 + (16 * scale * xi),
-        y: yOffset + 16 + (16 * scale * yi),
+        x: xOffset + 16 + (16 * SCALE * xi),
+        y: yOffset + 16 + (16 * SCALE * yi),
         animations: {idle: 'flying-blue'}
       })
       this.npcs.push(npc)
@@ -250,7 +204,7 @@ class BootScene extends Phaser.Scene {
 
   processTurn () {
     //verify order entered by user, update enemies orders
-    let cells = this.getMapSurrondings(this.player.positionIndex.i, this.player.positionIndex.j, this.player.actionRange)
+    let cells = this.map.getMapSurrondings(this.player.positionIndex.i, this.player.positionIndex.j, this.player.actionRange)
     switch(this.order) {
       case ORDER_CODES.JUMP:
         this.player.jump(TIME_TO_ANIMATE, cells)
@@ -279,7 +233,7 @@ class BootScene extends Phaser.Scene {
         let pos = {i: this.cursor.positionIndex.i, j: this.cursor.positionIndex.j}
         let attack = this.player.getAttackData()
         if (attack.type === 'melee') {  // apply hit inmediatily
-          let cursor = this.getElementInMap(pos.i, pos.j)
+          let cursor = this.map.getElementInMap(pos.i, pos.j)
           this.player.attack(TIME_TO_ANIMATE)
           this.applyAttack(cursor, attack)
         }
@@ -292,7 +246,7 @@ class BootScene extends Phaser.Scene {
 
     // update enemies
     this.npcs.forEach(npc => {      
-      let npcCells = this.getMapSurrondings(npc.positionIndex.i, npc.positionIndex.j, npc.actionRange)
+      let npcCells = this.map.getMapSurrondings(npc.positionIndex.i, npc.positionIndex.j, npc.actionRange)
       npc.pass(TIME_TO_ANIMATE, npcCells)
       npc.enableTime(TIME_TO_ANIMATE, 1)
     })
@@ -318,37 +272,6 @@ class BootScene extends Phaser.Scene {
     this.npcs.forEach(npc => {
       npc.update(dt)
     })
-  }
-
-  getMapSurrondings(indexI, indexJ, range) {
-    let map = []
-    let row = -1
-    for (var j = indexJ - range; j <= indexJ + range; j++) {
-      map.push((new Array(range * 2 + 1)).fill(undefined))
-      let col = -1
-      row++
-      if(j < 0) continue
-      for (var i = indexI - range; i <= indexI + range; i++) {
-        col++
-        if(i < 0) continue
-        map[row][col] = this.getTileProperties(this.map[j][i])
-      }
-    }
-    return map
-  }
-
-  getTileProperties (type) {
-    let properties = {
-      rigid: true
-    }
-    if([8].indexOf(type)!=-1) {
-      properties.rigid = false
-    }
-    return properties
-  }
-
-  getElementInMap (i, j) {
-    return this.getTileProperties(this.map[j][i])
   }
 
   applyAttack (element, attack) {
