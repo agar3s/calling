@@ -148,4 +148,15 @@ export default class Character {
     this.sprite.update()
   }
 
+  getAttackData () {
+    return {
+      hit: 10,
+      type: 'melee'
+    }
+  }
+
+  attack () {
+    // dont fall while attacking
+  }
+
 }

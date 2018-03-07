@@ -1,6 +1,7 @@
 import Player from '../sprites/player'
 import Character from '../sprites/character'
 import Control from '../util/control'
+import Target from '../util/target'
 
 let basicMap = 
 `8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8
@@ -44,7 +45,8 @@ const STATUS = {
   WAITING: 0,
   TRANSITION: 1,
   DELAY: 2,
-  PROCESSING: 3
+  PROCESSING: 3,
+  TARGETING: 4
 }
 
 const TIME_TO_ANIMATE = 300
@@ -62,7 +64,7 @@ class BootScene extends Phaser.Scene {
     this.load.spritesheet('ui', '../assets/ui.png', {frameWidth: 32, frameHeight: 32})
   }
 
-  create() {
+  create () {
     let scale = 2
     let padding = 1
     let ts = 16 // tileSize
@@ -87,16 +89,16 @@ class BootScene extends Phaser.Scene {
     
     let SCALE = 2
     let WIDTH = 16
+    let TS = SCALE*WIDTH // TileSize
     this.grid = this.add.graphics(0,0)
-    this.grid.lineStyle(0x220022, 1)
-    this.grid.fillStyle(0x220022, 0.2)
-    this.grid.beginPath()
+    this.grid.lineStyle(1, 0x220022, 0.05)
+    this.grid.fillStyle(0x220022, 0.05)
     for (var j = 0; j < 50; j++) {
       for (var i = 0; i < 50; i++) {
-        this.grid.fillRect(i*SCALE*WIDTH + 1 - SCALE*WIDTH/2, j*SCALE*WIDTH + 1 - SCALE*WIDTH/2, SCALE*WIDTH - 2, SCALE*WIDTH - 2)
+        //this.grid.fillRect(i*SCALE*WIDTH + 1 - SCALE*WIDTH/2, j*SCALE*WIDTH + 1 - SCALE*WIDTH/2, SCALE*WIDTH - 2, SCALE*WIDTH - 2)
+        this.grid.strokeRect(i*TS - TS/2, j*TS - TS/2, TS, TS)
       }
     }
-    this.grid.closePath()
 
     this.anims.create({
       key: 'flying-blue',
@@ -143,6 +145,11 @@ class BootScene extends Phaser.Scene {
       scene: this
     })
 
+    // target cursor
+    this.target = new Target({
+      scene: this
+    })
+
     // experimental turn based order
     this.status = STATUS.WAITING
     this.turnTransition = 0
@@ -157,28 +164,22 @@ class BootScene extends Phaser.Scene {
     if (this.status === STATUS.WAITING) {
       // read keys
       if (this.control.isUp()) {
-        this.order = ORDER_CODES.JUMP
+        this.setOrder(ORDER_CODES.JUMP)
       } else if (this.control.isLeft()) {
-        this.order = ORDER_CODES.LEFT
+        this.setOrder(ORDER_CODES.LEFT)
       } else if (this.control.isRight()) {
-        this.order = ORDER_CODES.RIGHT
+        this.setOrder(ORDER_CODES.RIGHT)
       } else if (this.control.isDown()) {
-        this.order = ORDER_CODES.DOWN
+        this.setOrder(ORDER_CODES.DOWN)
       } else if (this.control.isTalk()) {
-        this.order = ORDER_CODES.TALK
+        //this.order = ORDER_CODES.TALK
       } else if (this.control.isAttack()) {
-        this.order = ORDER_CODES.ATTACK
+        this.showTarget()
+        //this.order = ORDER_CODES.ATTACK
       } else if (this.control.isJumpLeft()) {
-        this.order = ORDER_CODES.JUMP_LEFT
+        this.setOrder(ORDER_CODES.JUMP_LEFT)
       } else if (this.control.isJumpRight()) {
-        this.order = ORDER_CODES.JUMP_RIGHT
-      }
-
-      if (this.order > 0) {        
-        this.status = STATUS.PROCESSING
-        setTimeout(() => {
-          this.processTurn()  
-        }, 1)
+        this.setOrder(ORDER_CODES.JUMP_RIGHT)
       }
       return
     }
@@ -186,19 +187,65 @@ class BootScene extends Phaser.Scene {
     if (this.status === STATUS.TRANSITION) {
       if (this.turnTransition < 0) {
         this.endTurn()
-        this.turnTransition = 150
-        this.status = STATUS.DELAY
+        this.delayTransition(STATUS.WAITING, 150)
       } else {
         this.updateTurn(dt)
       }
       return
     }
 
-    if (this.status === STATUS.DELAY) {
-      if (this.turnTransition < 0) {
-        this.status = STATUS.WAITING
+    if (this.status === STATUS.TARGETING) {
+      let actionTaken = true
+      if (this.control.isUp()) {
+        this.target.move(0, -1)
+      } else if (this.control.isLeft()) {
+        this.target.move(-1, 0)
+      } else if (this.control.isRight()) {
+        this.target.move(1, 0)
+      } else if (this.control.isDown()) {
+        this.target.move(0, 1)
+      } else if (this.control.isJumpLeft()) {
+        this.target.move(-1, -1)
+      } else if (this.control.isJumpRight()) {
+        this.target.move(1, -1)
+      } else if (this.control.isTalk()) {
+        //this.order = ORDER_CODES.TALK
+      } else if (this.control.isAttack()) {
+        this.setOrder(ORDER_CODES.ATTACK)
+        this.target.hideTarget()
+      } else {
+        actionTaken = false
+      }
+
+      if (actionTaken) {
+        this.delayTransition(STATUS.TARGETING, 150)
       }
     }
+
+    if (this.status === STATUS.DELAY) {
+      if (this.turnTransition < 0) {
+        this.status = this.nextStatus
+      }
+    }
+  }
+
+  setOrder (order) {
+    this.order = order
+    this.status = STATUS.PROCESSING
+    setTimeout(() => {
+      this.processTurn()  
+    }, 1)
+  }
+
+  showTarget () {
+    this.delayTransition(STATUS.TARGETING, 150)
+    this.target.setPosition(this.player.positionIndex.i, this.player.positionIndex.j)
+  }
+
+  delayTransition (newStatus, delayTime) {
+    this.status = STATUS.DELAY
+    this.turnTransition = delayTime
+    this.nextStatus = newStatus
   }
 
   processTurn () {
@@ -229,7 +276,13 @@ class BootScene extends Phaser.Scene {
         this.player.pass(TIME_TO_ANIMATE, cells)
       break
       case ORDER_CODES.ATTACK:
-        this.player.pass(TIME_TO_ANIMATE, cells)
+        let pos = {i: this.target.positionIndex.i, j: this.target.positionIndex.j}
+        let attack = this.player.getAttackData()
+        if (attack.type === 'melee') {  // apply hit inmediatily
+          let target = this.getElementInMap(pos.i, pos.j)
+          this.player.attack(TIME_TO_ANIMATE)
+          this.applyAttack(target, attack)
+        }
       break
     }
 
@@ -292,6 +345,14 @@ class BootScene extends Phaser.Scene {
       properties.rigid = false
     }
     return properties
+  }
+
+  getElementInMap (i, j) {
+    return this.getTileProperties(this.map[j][i])
+  }
+
+  applyAttack (element, attack) {
+
   }
 }
 
