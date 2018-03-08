@@ -277,6 +277,7 @@ class BootScene extends Phaser.Scene {
 
   applyAttack (element, attack) {
     console.log('attack to', element)
+    
   }
 }
 

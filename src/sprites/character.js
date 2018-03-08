@@ -68,8 +68,11 @@ export default class Character {
     let center = this.actionRange
     let steps = 1
     let a = surrondings[center - 1][center]
+    let e = surrondings[center + 1][center]
     a = a && a.rigid
-    if (!a) {
+    e = e && e.rigid
+
+    if (!a && e) {
       this.applyJumpSpeed(transitionTime)
     }
   }
@@ -92,9 +95,11 @@ export default class Character {
     let steps = 1
     let a = surrondings[center - 1][center]
     let b = surrondings[center - 1][center + direction]
+    let e = surrondings[center + 1][center]
     a = a && a.rigid
     b = b && b.rigid
-    if (!a) {
+    e = e && e.rigid
+    if (!a && e) {
       this.applyJumpSpeed(transitionTime)
       if (!b) {
         this.speed.x = direction*WIDTH*SCALE*steps/transitionTime
