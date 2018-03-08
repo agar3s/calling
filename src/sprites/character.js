@@ -19,7 +19,7 @@ export default class Character {
 
     this.timeFromTransition = 0
     this.fixedTimeForTransition = 0
-    this.attributes = new Attributes({})
+    this.attrs = new Attributes({dexterity: 5})
     this.animations = config.animations
     this.sprite.setScale(SCALE).play(this.animations.idle)
     this.actionRange = 2
@@ -56,12 +56,17 @@ export default class Character {
     c = c && c.rigid
     d = d && d.rigid
     e = e && e.rigid
-    if (!c){
+    if (!c) {
       this.speed.x = direction*WIDTH*SCALE*steps/transitionTime
     }
     if ((!c&&!d) || (c&&!e)) {
       this.fall(transitionTime, 1)
+      // if fall can't jump again
+      this.attrs.high = 0
+    } else {
+      this.attrs.restoreHigh()
     }
+
   }
 
   jump (transitionTime, surrondings) {
@@ -71,8 +76,13 @@ export default class Character {
     let e = surrondings[center + 1][center]
     a = a && a.rigid
     e = e && e.rigid
+    if (e) {
+      this.attrs.restoreHigh()
+    }
+    let canJump = (this.attrs.high--) > 0
+    console.log(this.attrs.high)
 
-    if (!a && e) {
+    if (!a && canJump) {
       this.applyJumpSpeed(transitionTime)
     }
   }
@@ -99,7 +109,12 @@ export default class Character {
     a = a && a.rigid
     b = b && b.rigid
     e = e && e.rigid
-    if (!a && e) {
+    if (e) {
+      this.attrs.restoreHigh()
+    }
+    let canJump = (this.attrs.high--) > 0
+
+    if (!a && canJump) {
       this.applyJumpSpeed(transitionTime)
       if (!b) {
         this.speed.x = direction*WIDTH*SCALE*steps/transitionTime
@@ -125,8 +140,11 @@ export default class Character {
     e = e && e.rigid
     if (!e) {
       this.fall(transitionTime, 1)
+      // if fall can't jump again
+      this.attrs.high = 0
     } else {
       this.sprite.anims.play(this.animations.idle)
+      this.attrs.restoreHigh()
     }
   }
 
