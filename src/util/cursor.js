@@ -4,7 +4,7 @@ const WIDTH = 16
 export default class Cursor {
   constructor (config) {
     this.show = false
-    this.positionIndex = {i: 0, j: 0}
+    this.position = {i: 0, j: 0}
     this.x = 0
     this.y = 0
 
@@ -18,8 +18,8 @@ export default class Cursor {
   }
 
   draw () {
-    let i = this.positionIndex.i
-    let j = this.positionIndex.j
+    let i = this.position.i
+    let j = this.position.j
     this.square.clear()
     this.square.lineStyle(1, 0x660022, 1)
     this.square.strokeRect(i*SCALE*WIDTH + 1 - SCALE*WIDTH/2, j*SCALE*WIDTH + 1 - SCALE*WIDTH/2, SCALE*WIDTH - 2, SCALE*WIDTH - 2)
@@ -30,13 +30,13 @@ export default class Cursor {
   }
 
   setPosition (i, j) {
-    this.positionIndex.i = i
-    this.positionIndex.j = j
+    this.position.i = i
+    this.position.j = j
     this.draw()
   }
 
   move(i, j) {
-    this.setPosition(this.positionIndex.i + i, this.positionIndex.j + j)
+    this.setPosition(this.position.i + i, this.position.j + j)
   }
 
   setAnchor (i, j) {

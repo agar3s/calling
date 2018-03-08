@@ -10,12 +10,12 @@ export default class Character {
     let y = config.y
     this.sprite = scene.add.sprite(x-WIDTH*SCALE*0.5, y-WIDTH*SCALE*0.5, 'characters')
     this.sprite.setOrigin(0.5, 0.5)
-
-    this.positionIndex = {i: 0, j: 0}
+    this.position = {i: 0, j: 0}
     this.speed = {x: 0, y: 0}
     this.acceleration = {x: 0, y: 0}
 
     this.fixPositionToGrid()
+    this.previousPosition = {i: this.position.i, j: this.position.j}
 
     this.timeFromTransition = 0
     this.fixedTimeForTransition = 0
@@ -23,6 +23,8 @@ export default class Character {
     this.animations = config.animations
     this.sprite.setScale(SCALE).play(this.animations.idle)
     this.actionRange = 2
+
+    this.type = 'character'
   }
 
   update (dt) {
@@ -124,7 +126,11 @@ export default class Character {
   }
 
   enableTime (transitionTime, factor) {
+    // update and save previous position
     this.fixPositionToGrid()
+    this.previousPosition.i = this.position.i
+    this.previousPosition.j = this.position.j
+    
     this.timeFromTransition = 0
     this.fixedTimeForTransition = transitionTime
   }
@@ -133,11 +139,11 @@ export default class Character {
     let ts = WIDTH * SCALE
     let xIndex = ~~(this.sprite.x/ts)
     let yIndex = ~~(this.sprite.y/ts)
-    this.positionIndex.i = (this.sprite.x - (xIndex*ts)) > (ts/2)? (xIndex + 1): xIndex
-    this.positionIndex.j = (this.sprite.y - (yIndex*ts)) > (ts/2)? (yIndex + 1): yIndex
+    this.position.i = (this.sprite.x - (xIndex*ts)) > (ts/2)? (xIndex + 1): xIndex
+    this.position.j = (this.sprite.y - (yIndex*ts)) > (ts/2)? (yIndex + 1): yIndex
 
-    this.sprite.x = this.positionIndex.i*ts
-    this.sprite.y = this.positionIndex.j*ts
+    this.sprite.x = this.position.i*ts
+    this.sprite.y = this.position.j*ts
   }
 
   disableTime () {
@@ -157,6 +163,11 @@ export default class Character {
 
   attack () {
     // dont fall while attacking
+    // has a maximun number of attacks without falling
+  }
+
+  changedPosition () {
+    return this.position.i != this.previousPosition.i || this.position.j != this.previousPosition.j
   }
 
 }

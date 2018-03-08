@@ -193,7 +193,7 @@ class BootScene extends Phaser.Scene {
 
   showCursor () {
     this.delayTransition(STATUS.TARGETING, 150)
-    this.cursor.setPosition(this.player.positionIndex.i, this.player.positionIndex.j)
+    this.cursor.setPosition(this.player.position.i, this.player.position.j)
   }
 
   delayTransition (newStatus, delayTime) {
@@ -204,7 +204,7 @@ class BootScene extends Phaser.Scene {
 
   processTurn () {
     //verify order entered by user, update enemies orders
-    let cells = this.map.getMapSurrondings(this.player.positionIndex.i, this.player.positionIndex.j, this.player.actionRange)
+    let cells = this.map.getMapSurrondings(this.player.position.i, this.player.position.j, this.player.actionRange)
     switch(this.order) {
       case ORDER_CODES.JUMP:
         this.player.jump(TIME_TO_ANIMATE, cells)
@@ -230,12 +230,12 @@ class BootScene extends Phaser.Scene {
         this.player.pass(TIME_TO_ANIMATE, cells)
       break
       case ORDER_CODES.ATTACK:
-        let pos = {i: this.cursor.positionIndex.i, j: this.cursor.positionIndex.j}
+        let pos = {i: this.cursor.position.i, j: this.cursor.position.j}
         let attack = this.player.getAttackData()
         if (attack.type === 'melee') {  // apply hit inmediatily
-          let cursor = this.map.getElementInMap(pos.i, pos.j)
+          let target = this.map.getElementInMap(pos.i, pos.j)
           this.player.attack(TIME_TO_ANIMATE)
-          this.applyAttack(cursor, attack)
+          this.applyAttack(target, attack)
         }
       break
     }
@@ -246,7 +246,7 @@ class BootScene extends Phaser.Scene {
 
     // update enemies
     this.npcs.forEach(npc => {      
-      let npcCells = this.map.getMapSurrondings(npc.positionIndex.i, npc.positionIndex.j, npc.actionRange)
+      let npcCells = this.map.getMapSurrondings(npc.position.i, npc.position.j, npc.actionRange)
       npc.pass(TIME_TO_ANIMATE, npcCells)
       npc.enableTime(TIME_TO_ANIMATE, 1)
     })
@@ -263,6 +263,7 @@ class BootScene extends Phaser.Scene {
     this.npcs.forEach(npc => {
       npc.update()
       npc.disableTime()
+      this.map.updateCharacterLocation(npc)
     })
   }
 
@@ -275,7 +276,7 @@ class BootScene extends Phaser.Scene {
   }
 
   applyAttack (element, attack) {
-
+    console.log('attack to', element)
   }
 }
 
