@@ -56,7 +56,7 @@ export default class Character {
     let c = surrondings[center][center + direction]
     let d = surrondings[center + 1][center + direction]
     let e = surrondings[center + 1][center]
-    c = c && c.rigid
+    c = c && !c.traspasable
     d = d && d.rigid
     e = e && e.rigid
     if (!c) {
@@ -77,20 +77,25 @@ export default class Character {
     let steps = 1
     let a = surrondings[center - 1][center]
     let e = surrondings[center + 1][center]
-    a = a && a.rigid
+    a = a && !a.traspasable
     e = e && e.rigid
     if (e) {
       this.attrs.restoreHigh()
     }
     let canJump = (this.attrs.high--) > 0
-
     if (!a && canJump) {
       this.applyJumpSpeed(transitionTime)
     }
   }
 
-  down (transitionTime) {
-    this.speed.y = 0
+  down (transitionTime, surrondings) {
+    let center = this.actionRange
+    let e = surrondings[center + 1][center]
+    e = e && !e.traspasable
+    if (!e) {
+      this.fall(transitionTime)
+      this.attrs.high = 0
+    }
   }
 
   turnLeft (transitionTime, surrondings) {

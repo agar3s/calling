@@ -143,33 +143,43 @@ let basicMap =
 
 let tileProperties = {
   '0': {
-    rigid: true
+    rigid: true,
+    traspasable: false,
   },
   '1': {
-    rigid: true
+    rigid: true,
+    traspasable: false
   },
   '2': {
-    rigid: true
+    rigid: true,
+    traspasable: false
   },
   '3': {
-    rigid: true
+    rigid: true,
+    traspasable: true
   },
   '4': {
-    rigid: true
+    rigid: true,
+    traspasable: true
   },
   '5': {
-    rigid: true
+    rigid: true,
+    traspasable: false
   },
   '6': {
-    rigid: true
+    rigid: true,
+    traspasable: false
   },
   '7': {
-    rigid: true
+    rigid: true,
+    traspasable: false
   },
   '8': {
-    rigid: false
+    rigid: false,
+    traspasable: true
   },
   '9': {
-    rigid: true
+    rigid: false,
+    traspasable: true
   }
 }

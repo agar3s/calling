@@ -229,8 +229,7 @@ class BootScene extends Phaser.Scene {
         this.player.jumpRight(TIME_TO_ANIMATE, cells)
       break
       case ORDER_CODES.DOWN:
-        this.player.down(TIME_TO_ANIMATE)
-        this.player.pass(TIME_TO_ANIMATE, cells)
+        this.player.down(TIME_TO_ANIMATE, cells)
       break
       case ORDER_CODES.TALK:
         console.log('pass')
