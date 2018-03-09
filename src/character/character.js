@@ -218,6 +218,7 @@ export default class Character {
 
   destroy () {
     this.sprite.setScale(SCALE, -SCALE)
+    this.attrs.hp = 0
   }
 
   assignOrder (order) {
@@ -228,6 +229,7 @@ export default class Character {
   }
 
   processOrder (cells, timeFromTransition) {
+    if(this.attrs.hp<=0) return {type:'pass'}
     this.checkSkills(this.order, cells)
     switch(this.order.code) {
       case ORDER_CODES.JUMP:
