@@ -66,11 +66,12 @@ export default class Map {
   }
 
   updateCharacterLocation (character) {
+    console.log(character.changedPosition())
     if (!character.changedPosition()) return
-    let pre = character.previousPosition
     let current = character.position
-    this.setElement(pre.i, pre.j)
-    this.setElement(current.i, current.j, character)
+    let future = character.futurePosition
+    this.setElement(current.i, current.j)
+    this.setElement(future.i, future.j, character)
   }
 }
 

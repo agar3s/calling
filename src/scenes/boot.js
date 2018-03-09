@@ -79,25 +79,27 @@ class BootScene extends Phaser.Scene {
 
     this.player = new Player({
       scene: this,
-      x: xOffset + 16 + (16 * SCALE * 6),
-      y: yOffset + 16 + (16 * SCALE * 2),
+      i: 3,
+      j: 5,
       animations: {idle: 'idle-red'}
     })
     this.player.addSkill(new DoubleJump({character: this.player}))
     this.player.addSkill(new Dash({character: this.player}))
+    this.map.updateCharacterLocation(this.player)
 
     this.npcs = []
 
-    for (var i = 0; i< 10; i++) {
-      let xi = ~~(Math.random()*16) + 2
-      let yi = ~~(Math.random()*16)
+    for (var i = 0; i< 1; i++) {
+      let j = ~~(Math.random()*16) + 2
+      let i = ~~(Math.random()*16)
       let npc = new Character({
         scene: this,
-        x: xOffset + 16 + (16 * SCALE * xi),
-        y: yOffset + 16 + (16 * SCALE * yi),
+        i: i,
+        j: j,
         animations: {idle: 'flying-blue'}
       })
       let index = this.npcs.push(npc)
+      this.map.updateCharacterLocation(npc)
       npc.npcIndex = index
     }
 
@@ -215,7 +217,7 @@ class BootScene extends Phaser.Scene {
   }
 
   processTurn () {
-    let possibleOrders = [ORDER_CODES.JUMP, ORDER_CODES.LEFT, ORDER_CODES.RIGHT, ORDER_CODES.DOWN, ORDER_CODES.JUMP_RIGHT, ORDER_CODES.JUMP_LEFT]
+    let possibleOrders = [ORDER_CODES.LEFT, ORDER_CODES.RIGHT]
     let orders = this.npcs.map(npc => {
       let randomOrder = possibleOrders[~~(Math.random()*possibleOrders.length)]
       return npc.assignOrder({code: randomOrder})
@@ -224,19 +226,24 @@ class BootScene extends Phaser.Scene {
     orders.sort((a, b) => {
       return b.priority - a.priority
     })
-    console.log(orders)
 
     orders.forEach(order => {
       let character = order.character
       let cells = this.map.getMapSurrondings(character.position.i, character.position.j, character.actionRange)
       let action = character.processOrder(cells, TIME_TO_ANIMATE)
+      
+      character.enableTime(TIME_TO_ANIMATE, 1)
       if (action.type === 'attack') {
         if (action.attack.type === 'melee') {
           let target = this.map.getElementInMap(action.attack.i, action.attack.j)
           this.applyAttack(target, action.attack)
         }
       }
-      character.enableTime(TIME_TO_ANIMATE, 1)
+
+      if (action.type === 'movement') {
+        this.map.updateCharacterLocation(character)
+        character.updateToFuturePosition()
+      }
     })
 
     this.turnTransition = TIME_TO_ANIMATE
@@ -251,7 +258,6 @@ class BootScene extends Phaser.Scene {
     this.npcs.forEach(npc => {
       npc.update()
       npc.disableTime()
-      this.map.updateCharacterLocation(npc)
     })
   }
 

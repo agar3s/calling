@@ -7,16 +7,14 @@ const WIDTH = 16
 export default class Character {
   constructor (config) {
     let scene = config.scene
-    let x = config.x
-    let y = config.y
-    this.sprite = scene.add.sprite(x-WIDTH*SCALE*0.5, y-WIDTH*SCALE*0.5, 'characters')
+    this.sprite = scene.add.sprite(0, 0, 'characters')
     this.sprite.setOrigin(0.5, 0.5)
-    this.position = {i: 0, j: 0}
+    this.position = {i: config.i, j: config.j}
     this.speed = {x: 0, y: 0}
     this.acceleration = {x: 0, y: 0}
 
+    this.futurePosition = {i: this.position.i, j: this.position.j}
     this.fixPositionToGrid()
-    this.previousPosition = {i: this.position.i, j: this.position.j}
 
     this.timeFromTransition = 0
     this.fixedTimeForTransition = 0
@@ -63,8 +61,10 @@ export default class Character {
     e = e && e.rigid
     if (!c) {
       this.speed.x = direction*WIDTH*SCALE*steps/transitionTime
+      this.futurePosition.i += direction
     }
     if ((!c&&!d) || (c&&!e)) {
+      this.futurePosition.j += this.cellsToFall
       this.fall(transitionTime)
       // if fall can't jump again
       this.attrs.high = 0
@@ -87,6 +87,7 @@ export default class Character {
     let canJump = (this.attrs.high--) > 0
     if (!a && canJump) {
       this.applyJumpSpeed(transitionTime)
+      this.futurePosition.j -= 1
     }
   }
 
@@ -95,6 +96,7 @@ export default class Character {
     let e = surrondings[center + 1][center]
     e = e && !e.traspasable
     if (!e) {
+      this.futurePosition.j += this.cellsToFall
       this.fall(transitionTime)
       this.attrs.high = 0
     }
@@ -125,7 +127,9 @@ export default class Character {
 
     if (!a && canJump) {
       this.applyJumpSpeed(transitionTime)
+      this.futurePosition.j -= 1
       if (!b) {
+        this.futurePosition.i += direction
         this.speed.x = direction*WIDTH*SCALE*steps/transitionTime
       }
     }
@@ -149,6 +153,7 @@ export default class Character {
     let e = surrondings[center + 1][center]
     e = e && e.rigid
     if (!e) {
+      this.futurePosition.j += 1
       this.fall(transitionTime)
       // if fall can't jump again
       this.attrs.high = 0
@@ -161,8 +166,6 @@ export default class Character {
   enableTime (transitionTime, factor) {
     // update and save previous position
     this.fixPositionToGrid()
-    this.previousPosition.i = this.position.i
-    this.previousPosition.j = this.position.j
     
     this.timeFromTransition = 0
     this.fixedTimeForTransition = transitionTime
@@ -170,13 +173,13 @@ export default class Character {
 
   fixPositionToGrid () {
     let ts = WIDTH * SCALE
-    let xIndex = ~~(this.sprite.x/ts)
-    let yIndex = ~~(this.sprite.y/ts)
-    this.position.i = (this.sprite.x - (xIndex*ts)) > (ts/2)? (xIndex + 1): xIndex
-    this.position.j = (this.sprite.y - (yIndex*ts)) > (ts/2)? (yIndex + 1): yIndex
-
     this.sprite.x = this.position.i*ts
     this.sprite.y = this.position.j*ts
+  }
+
+  updateToFuturePosition () {
+    this.position.i = this.futurePosition.i
+    this.position.j = this.futurePosition.j
   }
 
   disableTime () {
@@ -201,7 +204,7 @@ export default class Character {
   }
 
   changedPosition () {
-    return this.position.i != this.previousPosition.i || this.position.j != this.previousPosition.j
+    return this.position.i != this.futurePosition.i || this.position.j != this.futurePosition.j
   }
 
   checkSkills (order, cells) {
