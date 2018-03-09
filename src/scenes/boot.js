@@ -97,7 +97,8 @@ class BootScene extends Phaser.Scene {
         y: yOffset + 16 + (16 * SCALE * yi),
         animations: {idle: 'flying-blue'}
       })
-      this.npcs.push(npc)
+      let index = this.npcs.push(npc)
+      npc.npcIndex = index
     }
 
     // control
@@ -281,9 +282,13 @@ class BootScene extends Phaser.Scene {
     })
   }
 
-  applyAttack (element, attack) {
-    console.log('attack to', element)
-    
+  applyAttack (target, attack) {
+    console.log('attack to', target)
+    let element = target.element
+    if(target.type === 'character') {
+      let index = element.npcIndex
+      element.destroy()
+     }
   }
 }
 

@@ -214,4 +214,8 @@ export default class Character {
     this.skills.push(skill)
   }
 
+  destroy () {
+    this.sprite.destroy()
+  }
+
 }
