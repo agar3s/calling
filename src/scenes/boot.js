@@ -5,6 +5,7 @@ import Cursor from '../util/cursor'
 import Map from '../dungeon/map'
 
 import DoubleJump from '../character/skills/doubleJump'
+import Dash from '../character/skills/dash'
 
 const ORDER_CODES = {
   JUMP: 1,
@@ -83,6 +84,7 @@ class BootScene extends Phaser.Scene {
       animations: {idle: 'idle-red'}
     })
     this.player.addSkill(new DoubleJump({character: this.player}))
+    this.player.addSkill(new Dash({character: this.player}))
 
     this.npcs = []
 

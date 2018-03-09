@@ -25,6 +25,8 @@ export default class Character {
     this.sprite.setScale(SCALE).play(this.animations.idle)
     this.actionRange = 1
 
+    this.cellsToFall = 1
+
     this.type = 'character'
   }
 
@@ -44,7 +46,7 @@ export default class Character {
     let yDistance = (-gravityDistance/2)*WIDTH*SCALE
     this.speed.y = yDistance/transitionTime
     
-    this.fall(transitionTime, 1)
+    this.fall(transitionTime)
   }
 
   applyLateralSpeed (transitionTime, surrondings, direction) {
@@ -61,7 +63,7 @@ export default class Character {
       this.speed.x = direction*WIDTH*SCALE*steps/transitionTime
     }
     if ((!c&&!d) || (c&&!e)) {
-      this.fall(transitionTime, 1)
+      this.fall(transitionTime)
       // if fall can't jump again
       this.attrs.high = 0
     } else {
@@ -130,7 +132,8 @@ export default class Character {
     this.applyJumpLateral(transitionTime, surrondings, 1)
   }
 
-  fall(transitionTime, cellsToFall) {
+  fall(transitionTime) {
+    let cellsToFall = this.cellsToFall
     this.acceleration.y = WIDTH*SCALE*(cellsToFall)/(transitionTime*transitionTime)
   }
 
@@ -139,7 +142,7 @@ export default class Character {
     let e = surrondings[center + 1][center]
     e = e && e.rigid
     if (!e) {
-      this.fall(transitionTime, 1)
+      this.fall(transitionTime)
       // if fall can't jump again
       this.attrs.high = 0
     } else {
@@ -175,6 +178,7 @@ export default class Character {
     this.speed.y = 0
     this.acceleration.y = 0
     this.sprite.update()
+    this.skills.forEach(skill => skill.afterTurn())
   }
 
   getAttackData () {

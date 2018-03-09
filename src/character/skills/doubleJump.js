@@ -4,6 +4,7 @@ import Skill from './skill'
 export default class DoubleJump extends Skill {
   constructor (params) {
     super(params)
+    this.maxCharges = 1
     this.charges = 1
   }
 
@@ -18,7 +19,7 @@ export default class DoubleJump extends Skill {
     let e = cells[center + 1][center]
     e = e && e.rigid
     if (e) {
-      this.charges = 1
+      this.charges = this.maxCharges
       return false
     }
     if (this.charges === 0) return false

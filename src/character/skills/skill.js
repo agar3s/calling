@@ -5,7 +5,7 @@ export default class Skill {
     this.character = params.character
   }
 
-  activate () {
-    
-  }
+  activate () {}
+  trigger () {}
+  afterTurn () {}
 }
