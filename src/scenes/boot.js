@@ -1,8 +1,10 @@
-import Player from '../sprites/player'
-import Character from '../sprites/character'
+import Player from '../character/player'
+import Character from '../character/character'
 import Control from '../util/control'
 import Cursor from '../util/cursor'
 import Map from '../dungeon/map'
+
+import DoubleJump from '../character/skills/doubleJump'
 
 const ORDER_CODES = {
   JUMP: 1,
@@ -14,6 +16,7 @@ const ORDER_CODES = {
   ATTACK: 7,
   TALK: 8
 }
+
 
 const STATUS = {
   WAITING: 0,
@@ -79,6 +82,7 @@ class BootScene extends Phaser.Scene {
       y: yOffset + 16 + (16 * SCALE * 2),
       animations: {idle: 'idle-red'}
     })
+    this.player.addSkill(new DoubleJump({character: this.player}))
 
     this.npcs = []
 
@@ -205,6 +209,7 @@ class BootScene extends Phaser.Scene {
   processTurn () {
     //verify order entered by user, update enemies orders
     let cells = this.map.getMapSurrondings(this.player.position.i, this.player.position.j, this.player.actionRange)
+    this.player.checkSkills(this.order, cells)
     switch(this.order) {
       case ORDER_CODES.JUMP:
         this.player.jump(TIME_TO_ANIMATE, cells)
@@ -281,4 +286,7 @@ class BootScene extends Phaser.Scene {
   }
 }
 
-export default BootScene
+export {
+  ORDER_CODES,
+  BootScene
+}

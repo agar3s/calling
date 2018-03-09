@@ -20,9 +20,10 @@ export default class Character {
     this.timeFromTransition = 0
     this.fixedTimeForTransition = 0
     this.attrs = new Attributes({dexterity: 5})
+    this.skills = []
     this.animations = config.animations
     this.sprite.setScale(SCALE).play(this.animations.idle)
-    this.actionRange = 2
+    this.actionRange = 1
 
     this.type = 'character'
   }
@@ -80,7 +81,6 @@ export default class Character {
       this.attrs.restoreHigh()
     }
     let canJump = (this.attrs.high--) > 0
-    console.log(this.attrs.high)
 
     if (!a && canJump) {
       this.applyJumpSpeed(transitionTime)
@@ -191,6 +191,18 @@ export default class Character {
 
   changedPosition () {
     return this.position.i != this.previousPosition.i || this.position.j != this.previousPosition.j
+  }
+
+  checkSkills (order, cells) {
+    this.skills.forEach(skill => {
+      if (skill.trigger(order, cells)) {
+        skill.activate()
+      }
+    })
+  }
+
+  addSkill (skill) {
+    this.skills.push(skill)
   }
 
 }

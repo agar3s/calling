@@ -1,5 +1,5 @@
 import 'phaser'
-import BootScene from './scenes/boot'
+import {BootScene} from './scenes/boot'
 
 let config = {
   type: Phaser.WEBGL,
