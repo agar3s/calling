@@ -1,4 +1,5 @@
 import Attributes from './attributes'
+import {ORDER_CODES} from '../scenes/boot'
 
 const SCALE = 2
 const WIDTH = 16
@@ -28,6 +29,7 @@ export default class Character {
     this.cellsToFall = 1
 
     this.type = 'character'
+    this.order = {}
   }
 
   update (dt) {
@@ -215,7 +217,50 @@ export default class Character {
   }
 
   destroy () {
-    this.sprite.destroy()
+    this.sprite.setScale(SCALE, -SCALE)
+  }
+
+  assignOrder (order) {
+    this.order = order
+    this.order.priority = ~~(Math.random()*1000)
+    this.order.character = this
+    return this.order
+  }
+
+  processOrder (cells, timeFromTransition) {
+    this.checkSkills(this.order, cells)
+    switch(this.order.code) {
+      case ORDER_CODES.JUMP:
+        this.jump(timeFromTransition, cells)
+        return {type: 'movement'}
+      case ORDER_CODES.LEFT:
+        this.turnLeft(timeFromTransition, cells)
+        return {type: 'movement'}
+      case ORDER_CODES.RIGHT:
+        this.turnRight(timeFromTransition, cells)
+        return {type: 'movement'}
+      case ORDER_CODES.JUMP_LEFT:
+        this.jumpLeft(timeFromTransition, cells)
+        return {type: 'movement'}
+      case ORDER_CODES.JUMP_RIGHT:
+        this.jumpRight(timeFromTransition, cells)
+        return {type: 'movement'}
+      case ORDER_CODES.DOWN:
+        this.down(timeFromTransition, cells)
+        return {type: 'movement'}
+      case ORDER_CODES.TALK:
+        console.log('pass')
+        this.pass(timeFromTransition, cells)
+        return {type: 'talk'}
+      case ORDER_CODES.ATTACK:
+        let attack = this.getAttackData()
+        attack.i = this.order.i
+        attack.j = this.order.j
+        if (attack.type === 'melee') {
+          this.attack(timeFromTransition)
+        }
+        return {type: 'attack', attack}
+    }
   }
 
 }

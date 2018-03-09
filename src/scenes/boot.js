@@ -114,7 +114,7 @@ class BootScene extends Phaser.Scene {
     // experimental turn based order
     this.status = STATUS.WAITING
     this.turnTransition = 0
-    this.order = 0
+    this.order = {}
 
 
   }
@@ -190,8 +190,13 @@ class BootScene extends Phaser.Scene {
     }
   }
 
-  setOrder (order) {
-    this.order = order
+  // declare action in this turn
+  setOrder (orderCode) {
+    this.order = {
+      code: orderCode,
+      i: this.cursor.position.i,
+      j: this.cursor.position.j
+    }
     this.status = STATUS.PROCESSING
     setTimeout(() => {
       this.processTurn()  
@@ -210,52 +215,28 @@ class BootScene extends Phaser.Scene {
   }
 
   processTurn () {
-    //verify order entered by user, update enemies orders
-    let cells = this.map.getMapSurrondings(this.player.position.i, this.player.position.j, this.player.actionRange)
-    this.player.checkSkills(this.order, cells)
-    switch(this.order) {
-      case ORDER_CODES.JUMP:
-        this.player.jump(TIME_TO_ANIMATE, cells)
-      break
-      case ORDER_CODES.LEFT:
-        this.player.turnLeft(TIME_TO_ANIMATE, cells)
-      break
-      case ORDER_CODES.RIGHT:
-        this.player.turnRight(TIME_TO_ANIMATE, cells)
-      break
-      case ORDER_CODES.JUMP_LEFT:
-        this.player.jumpLeft(TIME_TO_ANIMATE, cells)
-      break
-      case ORDER_CODES.JUMP_RIGHT:
-        this.player.jumpRight(TIME_TO_ANIMATE, cells)
-      break
-      case ORDER_CODES.DOWN:
-        this.player.down(TIME_TO_ANIMATE, cells)
-      break
-      case ORDER_CODES.TALK:
-        console.log('pass')
-        this.player.pass(TIME_TO_ANIMATE, cells)
-      break
-      case ORDER_CODES.ATTACK:
-        let pos = {i: this.cursor.position.i, j: this.cursor.position.j}
-        let attack = this.player.getAttackData()
-        if (attack.type === 'melee') {  // apply hit inmediatily
-          let target = this.map.getElementInMap(pos.i, pos.j)
-          this.player.attack(TIME_TO_ANIMATE)
-          this.applyAttack(target, attack)
+    let possibleOrders = [ORDER_CODES.JUMP, ORDER_CODES.LEFT, ORDER_CODES.RIGHT, ORDER_CODES.DOWN, ORDER_CODES.JUMP_RIGHT, ORDER_CODES.JUMP_LEFT]
+    let orders = this.npcs.map(npc => {
+      let randomOrder = possibleOrders[~~(Math.random()*possibleOrders.length)]
+      return npc.assignOrder({code: randomOrder})
+    })
+    orders.push(this.player.assignOrder(this.order))
+    orders.sort((a, b) => {
+      return b.priority - a.priority
+    })
+    console.log(orders)
+
+    orders.forEach(order => {
+      let character = order.character
+      let cells = this.map.getMapSurrondings(character.position.i, character.position.j, character.actionRange)
+      let action = character.processOrder(cells, TIME_TO_ANIMATE)
+      if (action.type === 'attack') {
+        if (action.attack.type === 'melee') {
+          let target = this.map.getElementInMap(action.attack.i, action.attack.j)
+          this.applyAttack(target, action.attack)
         }
-      break
-    }
-
-    //this.player.applyUpdates(TIME_TO_ANIMATE, cells)
-    this.player.enableTime(TIME_TO_ANIMATE, 1)
-
-
-    // update enemies
-    this.npcs.forEach(npc => {      
-      let npcCells = this.map.getMapSurrondings(npc.position.i, npc.position.j, npc.actionRange)
-      npc.pass(TIME_TO_ANIMATE, npcCells)
-      npc.enableTime(TIME_TO_ANIMATE, 1)
+      }
+      character.enableTime(TIME_TO_ANIMATE, 1)
     })
 
     this.turnTransition = TIME_TO_ANIMATE
@@ -265,7 +246,7 @@ class BootScene extends Phaser.Scene {
   endTurn () {
     this.player.update()
     this.player.disableTime()
-    this.order = 0
+    this.order = {}
 
     this.npcs.forEach(npc => {
       npc.update()

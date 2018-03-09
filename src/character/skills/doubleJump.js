@@ -24,9 +24,9 @@ export default class DoubleJump extends Skill {
     }
     if (this.charges === 0) return false
 
-    let jumpOrder = order === ORDER_CODES.JUMP ||
-                    order === ORDER_CODES.JUMP_RIGHT ||
-                    order === ORDER_CODES.JUMP_LEFT
+    let jumpOrder = order.code === ORDER_CODES.JUMP ||
+                    order.code === ORDER_CODES.JUMP_RIGHT ||
+                    order.code === ORDER_CODES.JUMP_LEFT
     
     return this.character.attrs.high <= 0 && jumpOrder
   }

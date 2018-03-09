@@ -23,10 +23,10 @@ export default class Dash extends Skill {
       return false
     }
     if(this.charges === 0) return false
-    let isDashOrder = order === ORDER_CODES.LEFT ||
-                      order === ORDER_CODES.RIGHT
+    let isDashOrder = order.code === ORDER_CODES.LEFT ||
+                      order.code === ORDER_CODES.RIGHT
     if (!isDashOrder) return false
-    let direction = order === ORDER_CODES.LEFT?-1:1
+    let direction = order.code === ORDER_CODES.LEFT?-1:1
     let d = cells[center + 1][center + direction]
     d = d && d.rigid
     return !d
