@@ -81,7 +81,10 @@ class BootScene extends Phaser.Scene {
       scene: this,
       i: 3,
       j: 5,
-      animations: {idle: 'idle-red'}
+      animations: {idle: 'idle-red'},
+      attrs: {
+        dexterity: 5
+      }
     })
     this.player.addSkill(new DoubleJump({character: this.player}))
     this.player.addSkill(new Dash({character: this.player}))
@@ -223,9 +226,11 @@ class BootScene extends Phaser.Scene {
       return npc.assignOrder({code: randomOrder})
     })
     orders.push(this.player.assignOrder(this.order))
+
     orders.sort((a, b) => {
       return b.priority - a.priority
     })
+    console.log(orders)
 
     orders.forEach(order => {
       let character = order.character

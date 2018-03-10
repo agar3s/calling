@@ -12,6 +12,7 @@ export default class Attributes {
     // derivated from dexterity
     this.maxHigh = 1
     this.high = 1
+    this.speed = 1
 
     // derivated from strength
     this.maxHp = 1
@@ -25,6 +26,7 @@ export default class Attributes {
     this.dexterity = dx
     this.maxHigh = ~~(dx*0.34) + 1
     this.high = this.maxHigh
+    this.speed = dx*2
   }
 
   updateStrength (st) {

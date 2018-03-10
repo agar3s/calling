@@ -4,6 +4,17 @@ import {ORDER_CODES} from '../scenes/boot'
 const SCALE = 2
 const WIDTH = 16
 
+const ORDER_DATA = {
+  1: {type: 'movement', speed: 1.5},
+  2: {type: 'movement', speed: 1.5},
+  3: {type: 'movement', speed: 1.5},
+  4: {type: 'movement', speed: 1.5},
+  5: {type: 'movement', speed: 1.5},
+  6: {type: 'movement', speed: 1.5},
+  7: {type: 'attack', speed: 1},
+  8: {type: 'talk', speed: 3}
+}
+
 export default class Character {
   constructor (config) {
     let scene = config.scene
@@ -18,7 +29,7 @@ export default class Character {
 
     this.timeFromTransition = 0
     this.fixedTimeForTransition = 0
-    this.attrs = new Attributes({dexterity: 5})
+    this.attrs = new Attributes(config.attrs || {})
     this.skills = []
     this.animations = config.animations
     this.sprite.setScale(SCALE).play(this.animations.idle)
@@ -226,7 +237,8 @@ export default class Character {
 
   assignOrder (order) {
     this.order = order
-    this.order.priority = ~~(Math.random()*1000)
+    let orderData = ORDER_DATA[order.code]
+    this.order.priority = this.attrs.speed*orderData.speed
     this.order.character = this
     return this.order
   }
