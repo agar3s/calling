@@ -78,9 +78,9 @@ export default class Character {
       this.futurePosition.j += this.cellsToFall
       this.fall(transitionTime)
       // if fall can't jump again
-      this.attrs.high = 0
+      this.attrs.setProperty('high', 0)
     } else {
-      this.attrs.restoreHigh()
+      this.attrs.restoreProperty('high')
     }
 
   }
@@ -93,9 +93,10 @@ export default class Character {
     a = a && !a.traspasable
     e = e && e.rigid
     if (e) {
-      this.attrs.restoreHigh()
+      this.attrs.restoreProperty('high')
     }
-    let canJump = (this.attrs.high--) > 0
+    let canJump = this.attrs.getProperty('high') > 0
+    this.attrs.incrementProperty('high', -1)
     if (!a && canJump) {
       this.applyJumpSpeed(transitionTime)
       this.futurePosition.j -= 1
@@ -109,7 +110,7 @@ export default class Character {
     if (!e) {
       this.futurePosition.j += this.cellsToFall
       this.fall(transitionTime)
-      this.attrs.high = 0
+      this.attrs.setProperty('high', 0)
     }
   }
 
@@ -132,9 +133,10 @@ export default class Character {
     b = b && b.rigid
     e = e && e.rigid
     if (e) {
-      this.attrs.restoreHigh()
+      this.attrs.restoreProperty('high')
     }
-    let canJump = (this.attrs.high--) > 0
+    let canJump = this.attrs.getProperty('high') > 0
+    this.attrs.incrementProperty('high', -1)
 
     if (!a && canJump) {
       this.applyJumpSpeed(transitionTime)
@@ -167,10 +169,10 @@ export default class Character {
       this.futurePosition.j += 1
       this.fall(transitionTime)
       // if fall can't jump again
-      this.attrs.high = 0
+      this.attrs.setProperty('high', 0)
     } else {
       this.sprite.anims.play(this.animations.idle)
-      this.attrs.restoreHigh()
+      this.attrs.restoreProperty('high')
     }
   }
 
@@ -232,7 +234,7 @@ export default class Character {
 
   destroy () {
     this.sprite.setScale(SCALE, -SCALE)
-    this.attrs.hp = 0
+    this.attrs.setProperty('hp', 0)
   }
 
   assignOrder (order) {
@@ -244,7 +246,7 @@ export default class Character {
   }
 
   processOrder (cells, timeFromTransition) {
-    if(this.attrs.hp<=0) return {type:'pass'}
+    if(this.attrs.getProperty('hp') <= 0) return {type: 'pass'}
     this.checkSkills(this.order, cells)
     switch(this.order.code) {
       case ORDER_CODES.JUMP:

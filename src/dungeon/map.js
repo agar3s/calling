@@ -66,7 +66,6 @@ export default class Map {
   }
 
   updateCharacterLocation (character) {
-    console.log(character.changedPosition())
     if (!character.changedPosition()) return
     let current = character.position
     let future = character.futurePosition

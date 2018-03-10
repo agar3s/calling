@@ -9,7 +9,7 @@ export default class DoubleJump extends Skill {
   }
 
   activate () {
-    this.character.attrs.restoreHigh()
+    this.character.attrs.setProperty('high', Infinity)
     this.charges--
     console.log('DoubleJump!!!')
   }
@@ -28,6 +28,6 @@ export default class DoubleJump extends Skill {
                     order.code === ORDER_CODES.JUMP_RIGHT ||
                     order.code === ORDER_CODES.JUMP_LEFT
     
-    return this.character.attrs.high <= 0 && jumpOrder
+    return this.character.attrs.getProperty('high') <= 0 && jumpOrder
   }
 }

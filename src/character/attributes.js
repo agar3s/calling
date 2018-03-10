@@ -10,50 +10,62 @@ export default class Attributes {
 
 
     // derivated from dexterity
-    this.maxHigh = 1
-    this.high = 1
-    this.speed = 1
+    this.high = Attributes.initProperty(1)
+    this.speed = Attributes.initProperty(1)
+    this.updateDexterity(config.dexterity || 1)
 
     // derivated from strength
-    this.maxHp = 1
-    this.hp = 1
-
-    this.updateDexterity(config.dexterity || 1)
+    this.hp = Attributes.initProperty(1)
     this.updateStrength(config.strength || 1)
   }
 
   updateDexterity (dx) {
     this.dexterity = dx
-    this.maxHigh = ~~(dx*0.34) + 1
-    this.high = this.maxHigh
-    this.speed = dx*2
+    this.setPropertyMaxValue('high', ~~(dx*0.34) + 1)
+    this.setPropertyMaxValue('speed', dx*2)
   }
 
   updateStrength (st) {
     this.strength = st
-    this.maxHp = st*3 + 10
-    this.hp = this.maxHp
+    this.setPropertyMaxValue('hp', st*3 + 10)
   }
 
-  restoreHigh (high) {
-    if (!high) {
-      this.high = this.maxHigh
-      return
-    }
-    this.high += high
-    if (this.high > this.maxHigh) {
-      this.high = this.maxHigh
+  setProperty (property, value) {
+    let prop = this[property]
+    prop.value = value
+    if (prop.value > prop.maxValue) {
+      prop.value = prop.maxValue
     }
   }
 
-  restoreHp (hp) {
-    if (!hp) {
-      this.hp = this.maxHp
-      return
-    }
-    this.hp += hp
-    if (this.hp > this.maxHp) {
-      this.hp = this.maxHp
+  incrementProperty (property, value) {
+    let newValue = this[property].value + value
+    this.setProperty(property, newValue)
+  }
+
+  getProperty (property) {
+    return this[property].value + this[property].mods
+  }
+
+  restoreProperty (property) {
+    this.setProperty(property, this[property].maxValue)
+  }
+
+  setPropertyMaxValue (property, value) {
+    let prop = this[property]
+    prop.maxValue = value
+    prop.value = value
+  }
+
+  addPropertyMod (property, mod) {
+    this[property].mods += mod
+  }
+
+  static initProperty(value) {
+    return {
+      value: value,
+      maxValue: value,
+      mods: 0
     }
   }
 }
