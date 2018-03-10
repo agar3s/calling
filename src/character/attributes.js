@@ -1,5 +1,4 @@
 
-
 // GURPS
 export default class Attributes {
   constructor (config) {
@@ -16,6 +15,13 @@ export default class Attributes {
     // derivated from strength
     this.hp = Attributes.initProperty(1)
     this.updateStrength(config.strength || 1)
+
+    // derivated from intelligence
+    this.sightRange = Attributes.initProperty(6)
+
+    // depending on item
+    this.meleeRange = Attributes.initProperty(1)
+    this.rangedRange = Attributes.initProperty(4)
   }
 
   updateDexterity (dx) {
@@ -67,4 +73,5 @@ export default class Attributes {
       mods: 0
     }
   }
+
 }

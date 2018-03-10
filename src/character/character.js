@@ -12,7 +12,8 @@ const ORDER_DATA = {
   5: {type: 'movement', speed: 1.5},
   6: {type: 'movement', speed: 1.5},
   7: {type: 'attack', speed: 1},
-  8: {type: 'talk', speed: 3}
+  8: {type: 'attack', speed: 1.2},
+  9: {type: 'talk', speed: 3}
 }
 
 export default class Character {
@@ -57,7 +58,8 @@ export default class Character {
     let yDistance = (-gravityDistance/2)*WIDTH*SCALE
     this.speed.y = yDistance/transitionTime
     
-    this.fall(transitionTime)
+    let cellsToFall = this.cellsToFall
+    this.acceleration.y = WIDTH*SCALE*(cellsToFall)/(transitionTime*transitionTime)
   }
 
   applyLateralSpeed (transitionTime, surrondings, direction) {
@@ -158,7 +160,7 @@ export default class Character {
 
   fall(transitionTime) {
     let cellsToFall = this.cellsToFall
-    this.acceleration.y = WIDTH*SCALE*(cellsToFall)/(transitionTime*transitionTime)
+    this.acceleration.y = WIDTH*SCALE*(cellsToFall*2)/(transitionTime*transitionTime)
   }
 
   pass (transitionTime, surrondings) {
@@ -239,6 +241,7 @@ export default class Character {
 
   assignOrder (order) {
     this.order = order
+    console.log(order)
     let orderData = ORDER_DATA[order.code]
     this.order.priority = this.attrs.getProperty('speed')*orderData.speed
     this.order.character = this
@@ -271,14 +274,22 @@ export default class Character {
         console.log('pass')
         this.pass(timeFromTransition, cells)
         return {type: 'talk'}
-      case ORDER_CODES.ATTACK:
-        let attack = this.getAttackData()
-        attack.i = this.order.i
-        attack.j = this.order.j
-        if (attack.type === 'melee') {
+      case ORDER_CODES.ATTACK_MELEE:
+        let melee = this.getAttackData()
+        melee.i = this.order.i
+        melee.j = this.order.j
+        if (melee.type === 'melee') {
           this.attack(timeFromTransition)
         }
-        return {type: 'attack', attack}
+        return {type: 'attack', melee}
+      case ORDER_CODES.ATTACK_RANGED:
+        let ranged = this.getAttackData()
+        ranged.i = this.order.i
+        ranged.j = this.order.j
+        if (ranged.type === 'ranged') {
+          this.attack(timeFromTransition)
+        }
+        return {type: 'attack', ranged}
     }
   }
 }

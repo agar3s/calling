@@ -23,6 +23,9 @@ export default class Control {
 
     this.keys.C = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C)
     this.keys.X = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X)
+    this.keys.Z = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z)
+    
+    this.keys.ESC = keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC)
   }
 
   isUp () {
@@ -45,7 +48,11 @@ export default class Control {
     return this.keys.C.isDown
   }
 
-  isAttack () {
+  isRangedAttack () {
+    return this.keys.Z.isDown
+  }
+
+  isMeleeAttack () {
     return this.keys.X.isDown
   }
 
@@ -55,5 +62,9 @@ export default class Control {
 
   isJumpRight () {
     return this.keys.E.isDown || this.keys.PAGE_DOWN.isDown
+  }
+
+  isCancel () {
+    return this.keys.ESC.isDown
   }
 }

@@ -14,8 +14,9 @@ const ORDER_CODES = {
   DOWN: 4,
   JUMP_RIGHT: 5,
   JUMP_LEFT: 6,
-  ATTACK: 7,
-  TALK: 8
+  ATTACK_MELEE: 7,
+  ATTACK_RANGED: 8,
+  TALK: 9
 }
 
 
@@ -93,8 +94,8 @@ class BootScene extends Phaser.Scene {
     this.npcs = []
 
     for (var i = 0; i< 1; i++) {
-      let j = ~~(Math.random()*16) + 2
-      let i = ~~(Math.random()*16)
+      let j = ~~(Math.random()*3) + 2
+      let i = ~~(Math.random()*4) + 1
       let npc = new Character({
         scene: this,
         i: i,
@@ -121,10 +122,25 @@ class BootScene extends Phaser.Scene {
     this.turnTransition = 0
     this.order = {}
 
+    var controlConfig = {
+      camera: this.cameras.main,
+      acceleration: 0.06,
+      drag: 0.0005,
+      maxSpeed: 1.0
+    }
 
+    this.cameraControl = new Phaser.Cameras.Controls.Smoothed(controlConfig)
+    this.cameras.main.startFollow(this.player.sprite, 10)
+
+    /*
+    effects for camera
+    this.cameras.main.flash(100, 0.9, 0.1, 0.1)
+    this.cameras.main.shake(100,0.003)
+    */
   }
 
   update (time, dt) {
+    this.cameraControl.update(dt)
     this.turnTransition -= dt
 
     if (this.status === STATUS.WAITING) {
@@ -138,10 +154,11 @@ class BootScene extends Phaser.Scene {
       } else if (this.control.isDown()) {
         this.setOrder(ORDER_CODES.DOWN)
       } else if (this.control.isTalk()) {
-        //this.order = ORDER_CODES.TALK
-      } else if (this.control.isAttack()) {
-        this.showCursor()
-        //this.order = ORDER_CODES.ATTACK
+        this.showCursor(this.player.attrs.getProperty('sightRange'), this.cursor.MODES.TALK)
+      } else if (this.control.isMeleeAttack()) {
+        this.showCursor(this.player.attrs.getProperty('meleeRange'), this.cursor.MODES.MELEE)
+      } else if (this.control.isRangedAttack()) {
+        this.showCursor(this.player.attrs.getProperty('rangedRange'), this.cursor.MODES.RANGED)
       } else if (this.control.isJumpLeft()) {
         this.setOrder(ORDER_CODES.JUMP_LEFT)
       } else if (this.control.isJumpRight()) {
@@ -175,10 +192,30 @@ class BootScene extends Phaser.Scene {
       } else if (this.control.isJumpRight()) {
         this.cursor.move(1, -1)
       } else if (this.control.isTalk()) {
-        //this.order = ORDER_CODES.TALK
-      } else if (this.control.isAttack()) {
-        this.setOrder(ORDER_CODES.ATTACK)
+        if (this.cursor.isTalkMode()) {
+          this.setOrder(ORDER_CODES.TALK)
+          this.cursor.hide()
+        } else {
+          this.showCursor(this.player.attrs.getProperty('sightRange'), this.cursor.MODES.TALK)
+        }
+      } else if (this.control.isMeleeAttack()) {
+        if (this.cursor.isMeleeMode()) {
+          this.setOrder(ORDER_CODES.ATTACK_MELEE)
+          this.cursor.hide()
+        } else {
+          this.showCursor(this.player.attrs.getProperty('meleeRange'), this.cursor.MODES.MELEE)
+        }
+      } else if (this.control.isRangedAttack()) {
+        if (this.cursor.isRangedMode()) {
+          this.setOrder(ORDER_CODES.ATTACK_RANGED)
+          this.cursor.hide()
+        } else {
+          this.showCursor(this.player.attrs.getProperty('rangedRange'), this.cursor.MODES.RANGED)
+        }
+      } else if (this.control.isCancel()) {
         this.cursor.hide()
+        this.delayTransition(STATUS.WAITING, 1)
+        actionTaken = false
       } else {
         actionTaken = false
       }
@@ -208,9 +245,9 @@ class BootScene extends Phaser.Scene {
     }, 1)
   }
 
-  showCursor () {
+  showCursor (range, type) {
     this.delayTransition(STATUS.TARGETING, 150)
-    this.cursor.setPosition(this.player.position.i, this.player.position.j)
+    this.cursor.setAnchor(this.player.position.i, this.player.position.j, range, type)
   }
 
   delayTransition (newStatus, delayTime) {
@@ -238,16 +275,19 @@ class BootScene extends Phaser.Scene {
       let action = character.processOrder(cells, TIME_TO_ANIMATE)
       
       character.enableTime(TIME_TO_ANIMATE, 1)
+      console.log(action)
       if (action.type === 'attack') {
-        if (action.attack.type === 'melee') {
-          let target = this.map.getElementInMap(action.attack.i, action.attack.j)
-          this.applyAttack(target, action.attack)
+        if (action.melee) {
+          let target = this.map.getElementInMap(action.melee.i, action.melee.j)
+          this.applyAttack(target, action.melee)
+          this.cameras.main.flash(100, 0.9, 0.1, 0.1)
+          this.cameras.main.shake(100,0.003)
         }
       }
 
-      if (action.type === 'movement') {
         this.map.updateCharacterLocation(character)
         character.updateToFuturePosition()
+      if (action.type === 'movement') {
       }
     })
 
