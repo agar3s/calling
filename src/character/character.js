@@ -240,7 +240,7 @@ export default class Character {
   assignOrder (order) {
     this.order = order
     let orderData = ORDER_DATA[order.code]
-    this.order.priority = this.attrs.speed*orderData.speed
+    this.order.priority = this.attrs.getProperty('speed')*orderData.speed
     this.order.character = this
     return this.order
   }
@@ -281,5 +281,4 @@ export default class Character {
         return {type: 'attack', attack}
     }
   }
-
 }

@@ -8,11 +8,9 @@ export default class Player extends Character{
     super(config)
   }
 
-
   enableTime (transitionTime, factor) {
     super.enableTime(transitionTime, factor)
     this.sprite.anims.play('flying-red', true)
   }
-
 
 }

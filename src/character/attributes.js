@@ -8,7 +8,6 @@ export default class Attributes {
     this.strength = 1     // ST
     this.intelligence = 1 // IQ
 
-
     // derivated from dexterity
     this.high = Attributes.initProperty(1)
     this.speed = Attributes.initProperty(1)
