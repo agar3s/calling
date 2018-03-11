@@ -30,8 +30,11 @@ export default class Projectil {
 
     this.position = {i: this.origin.i, j: this.origin.j}
 
+    this.maxPosition = {i: config.max.i, j: config.max.j}
+
     //DEBUG
-    this.location = config.scene.add.graphics(0, 0)
+/*    this.location = config.scene.add.graphics(0, 0)
+    console.log(this.maxPosition)*/
   }
 
   update (dt) {
@@ -51,6 +54,10 @@ export default class Projectil {
     let arrowY = this.sprite.y+this.speed.y*TS*0.35
     this.position.i = Math.round(arrowX/TS)
     this.position.j = Math.round(arrowY/TS)
+    // check arrow outside 
+    this.checkOutsideBounds()
+    if (this.hit) return
+
     let tileCenter = {
       x: this.position.i*TS,
       y: this.position.j*TS
@@ -60,11 +67,34 @@ export default class Projectil {
           arrowY-tileCenter.y
     )
     let distance = v.length()
-    
-    this.location.clear()
     this.hit = distance < TS*0.4
+    /*
+    this.location.clear()
     this.location.fillStyle(this.hit?0x994433:0x449933, 0.2)
-    this.location.fillRect((this.position.i-0.5)*TS, (this.position.j-0.5)*TS, TS, TS)    
+    this.location.fillRect((this.position.i-0.5)*TS, (this.position.j-0.5)*TS, TS, TS)
+    */
+  }
+
+  checkOutsideBounds () {
+    if (this.position.i < 0) {
+      this.position.i = 0
+      this.hit = true
+    }
+    
+    if (this.position.j < 0) {
+      this.position.j = 0
+      this.hit = true
+    }
+
+    if (this.maxPosition.i > this.maxPosition.i) {
+      this.position.i = this.maxPosition.i
+      this.hit = true
+    }
+
+    if(this.maxPosition.j > this.maxPosition.j) {
+      this.position.j = this.maxPosition.j
+      this.hit = true
+    }
   }
 
   resumeTime () {
@@ -84,13 +114,14 @@ export default class Projectil {
 
   getAttackData () {
     return {
-      hit: 2,
-      type: 'ranged'
+      hit: 6,
+      type: 'ranged',
+      speed: 5
     }
   }
   
   destroy () {
     this.sprite.destroy()
-    this.location.destroy()
+    //this.location.destroy()
   }
 }

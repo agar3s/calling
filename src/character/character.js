@@ -42,6 +42,10 @@ export default class Character {
 
     this.type = 'character'
     this.order = {}
+    this.hpBar = config.scene.add.graphics(0, 0)
+    this.hpBar.x = this.sprite.x - SCALE*WIDTH/2
+    this.hpBar.y = this.sprite.y - SCALE*WIDTH/2 - 4*SCALE
+    this.drawHp()
   }
 
   update (dt) {
@@ -52,6 +56,10 @@ export default class Character {
     this.speed.y += this.acceleration.y * dt
     this.sprite.x +=  this.speed.x*dt
     this.sprite.y +=  this.speed.y*dt
+
+    // update hp bar
+    this.hpBar.x = this.sprite.x - SCALE*WIDTH/2
+    this.hpBar.y = this.sprite.y - SCALE*WIDTH/2 - 4*SCALE
   }
 
   applyJumpSpeed (transitionTime) {
@@ -77,10 +85,12 @@ export default class Character {
     if (!c) {
       this.speed.x = direction*WIDTH*SCALE*steps/transitionTime
       this.futurePosition.i += direction
+      this.sprite.anims.play(this.animations.move)
     }
     if ((!c&&!d) || (c&&!e)) {
       this.futurePosition.j += this.cellsToFall
       this.fall(transitionTime)
+      this.sprite.anims.play(this.animations.move)
       // if fall can't jump again
       this.attrs.setProperty('high', 0)
     } else {
@@ -104,6 +114,7 @@ export default class Character {
     if (!a && canJump) {
       this.applyJumpSpeed(transitionTime)
       this.futurePosition.j -= 1
+      this.sprite.anims.play(this.animations.jump)
     }
   }
 
@@ -145,6 +156,7 @@ export default class Character {
     if (!a && canJump) {
       this.applyJumpSpeed(transitionTime)
       this.futurePosition.j -= 1
+      this.sprite.anims.play(this.animations.jump)
       if (!b) {
         this.futurePosition.i += direction
         this.speed.x = direction*WIDTH*SCALE*steps/transitionTime
@@ -163,6 +175,7 @@ export default class Character {
   fall(transitionTime) {
     let cellsToFall = this.cellsToFall
     this.acceleration.y = WIDTH*SCALE*(cellsToFall*2)/(transitionTime*transitionTime)
+    this.sprite.anims.play(this.animations.fall)
   }
 
   pass (transitionTime, surrondings) {
@@ -211,7 +224,8 @@ export default class Character {
   getAttackData () {
     return {
       hit: 10,
-      type: 'melee'
+      type: 'melee',
+      speed: 5
     }
   }
 
@@ -246,7 +260,10 @@ export default class Character {
 
   destroy () {
     this.sprite.setScale(SCALE, -SCALE)
-    this.attrs.setProperty('hp', 0)
+    this.hpBar.destroy()
+    setTimeout(()=>{
+      this.sprite.destroy()
+    }, 200)
   }
 
   assignOrder (order) {
@@ -260,6 +277,11 @@ export default class Character {
   processOrder (cells, timeFromTransition) {
     if(this.attrs.getProperty('hp') <= 0) return {type: 'pass'}
     this.checkSkills(this.order, cells)
+
+    let center = this.actionRange
+    let e = cells[center + 1][center]
+    e = e && e.rigid
+
     switch(this.order.code) {
       case ORDER_CODES.JUMP:
         this.jump(timeFromTransition, cells)
@@ -289,6 +311,8 @@ export default class Character {
         melee.j = this.order.j
         if (melee.type === 'melee') {
           this.attack(timeFromTransition)
+          let animation = e?this.animations.melee:this.animations.melee2
+          this.sprite.anims.play(animation)
         }
         return {type: 'attack', melee}
       case ORDER_CODES.ATTACK_RANGED:
@@ -297,8 +321,53 @@ export default class Character {
         ranged.origin = {i: this.position.i, j: this.position.j}
         if (ranged.type === 'ranged') {
           this.attack(timeFromTransition)
+          let animation = e?this.animations.ranged:this.animations.ranged2
+          this.sprite.anims.play(animation)
         }
         return {type: 'attack', ranged}
     }
+  }
+
+  applyHit (attack) {
+    console.log(attack)
+    console.log(this.attrs.getProperty('hp'))
+    console.log(this.attrs.getProperty('dodge'), 'a')
+    let dodged = this.attrs.save('dodge', attack.speed || 3)
+    console.log('dodge', dodged)
+    if (dodged===2) {
+      console.log('dodged!!!!!')
+      return
+    } else if (dodged === 1){
+      attack.hit /= 2
+      console.log('save dodge')
+    } else if(dodged<0) {
+      attack.hit *= -dodged
+      console.log('pifia')
+    }
+    let defense = this.attrs.getProperty('defense')
+    let damage = attack.hit - defense
+    this.attrs.incrementProperty('hp', -damage)
+    this.drawHp()
+    if(damage>0){
+      this.sprite.tint = 0x990000
+      setTimeout(() => {
+        this.sprite.tint = undefined
+      }, 120)
+    }
+  }
+
+  isDead () {
+    return this.attrs.getProperty('hp') <= 0
+  }
+
+  drawHp () {
+    let hpPercentage = this.attrs.getPropertyPercentage('hp')
+    this.hpBar.clear()
+    this.hpBar.fillStyle(0xCC4433, 0.6)
+    this.hpBar.fillRect(1*SCALE, 0, SCALE*(WIDTH - 2)*hpPercentage, 2*SCALE)
+  }
+
+  shake () {
+
   }
 }

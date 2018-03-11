@@ -73,6 +73,11 @@ export default class Map {
     this.setElement(current.i, current.j)
     this.setElement(future.i, future.j, character)
   }
+
+  removeElement (element) {
+    let current = element.position
+    this.setElement(current.i, current.j)
+  }
 }
 
 class Tile {

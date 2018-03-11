@@ -43,6 +43,7 @@ class BootScene extends Phaser.Scene {
     this.load.spritesheet('platforms', '../assets/platforms.png', {frameWidth: 16, frameHeight: 16})
     this.load.spritesheet('ui', '../assets/ui.png', {frameWidth: 32, frameHeight: 32})
     this.load.spritesheet('arrow', '../assets/arrow.png', {frameWidth: 16, frameHeight: 16})
+    this.load.spritesheet('player', '../assets/player_ss2.png', {frameWidth: 16, frameHeight: 16})
   }
 
   create () {   
@@ -69,22 +70,93 @@ class BootScene extends Phaser.Scene {
     })
 
     this.anims.create({
-      key: 'flying-red',
-      frames: [{key: 'characters', frame: 0}, {key: 'characters', frame: 1}],
-      repeat: -1,
-      frameRate: 6
+      key: 'player-jump',
+      frames: [{key: 'player', frame: 8, duration:2}, {key: 'player', frame: 9}],
+      repeat: 0,
+      frameRate: 4
+    })
+    this.anims.create({
+      key: 'player-fall',
+      frames: [{key: 'player', frame: 14, duration:2}, {key: 'player', frame: 15}],
+      repeat: 0,
+      frameRate: 4
     })
 
     this.anims.create({
-      key: 'idle-red',
-      frames: [{key: 'characters', frame: 0}]
+      key: 'player-move',
+      frames: [{key: 'player', frame: 2, duration:0}, {key: 'player', frame: 3}],
+      repeat: 0,
+      frameRate: 4
+    })
+
+    this.anims.create({
+      key: 'player-melee',
+      frames: [
+        {key: 'player', frame: 4},
+        {key: 'player', frame: 5, duration: 50},
+        {key: 'player', frame: 4}
+      ],
+      repeat: 0,
+      frameRate: 8
+    })
+
+    this.anims.create({
+      key: 'player-melee-air',
+      frames: [
+        {key: 'player', frame: 10},
+        {key: 'player', frame: 11, duration:50},
+        {key: 'player', frame: 10}
+      ],
+      repeat: 0,
+      frameRate: 8
+    })
+
+    this.anims.create({
+      key: 'player-ranged',
+      frames: [
+        {key: 'player', frame: 6},
+        {key: 'player', frame: 7, duration:50},
+        {key: 'player', frame: 6},
+      ],
+      repeat: 0,
+      frameRate: 8
+    })
+
+    this.anims.create({
+      key: 'player-ranged-air',
+      frames: [
+        {key: 'player', frame: 12},
+        {key: 'player', frame: 13, duration:50},
+        {key: 'player', frame: 12},
+      ],
+      repeat: 0,
+      frameRate: 8
+    })
+
+    this.anims.create({
+      key: 'player-idle',
+      frames: [
+        {key: 'player', frame: 0, duration:2},
+        {key: 'player', frame: 1}
+      ],
+      repeat: 1,
+      frameRate: 4
     })
 
     this.player = new Player({
       scene: this,
       i: 1,
       j: 3,
-      animations: {idle: 'idle-red'},
+      animations: {
+        idle: 'player-idle',
+        jump: 'player-jump',
+        fall:'player-fall',
+        move: 'player-move',
+        melee: 'player-melee',
+        ranged: 'player-ranged',
+        melee2: 'player-melee-air',
+        ranged2: 'player-ranged-air'
+      },
       attrs: {
         dexterity: 5
       }
@@ -105,10 +177,10 @@ class BootScene extends Phaser.Scene {
         j: j,
         animations: {idle: 'flying-blue'}
       })
-      let index = this.npcs.push(npc)
+      let index = this.npcs.push(npc) - 1
       this.map.updateCharacterLocation(npc)
       npc.updateToFuturePosition()
-      npc.npcIndex = index
+      npc.index = index
     }
 
     this.projectiles = []
@@ -278,7 +350,7 @@ class BootScene extends Phaser.Scene {
     let possibleOrders = [ORDER_CODES.DOWN, ORDER_CODES.LEFT, ORDER_CODES.RIGHT, ORDER_CODES.JUMP, ORDER_CODES.JUMP_LEFT, ORDER_CODES.JUMP_RIGHT]
     let orders = this.npcs.map(npc => {
       let randomOrder = possibleOrders[~~(Math.random()*possibleOrders.length)]
-      return npc.assignOrder({code: randomOrder})
+      return npc.assignOrder({code: randomOrder, i: this.player.position.i, j:this.player.position.j})
     })
     orders.push(this.player.assignOrder(this.order))
 
@@ -353,10 +425,18 @@ class BootScene extends Phaser.Scene {
   applyAttack (target, attack) {
     let element = target.element
     if (target.type === 'character') {
-      let index = element.npcIndex
-      this.cameras.main.flash(100, 0.9, 0.1, 0.1)
-      this.cameras.main.shake(100, 0.003)
-      element.destroy()
+      element.applyHit(attack)
+      if (element.isDead()) {
+        if(element === this.player) {
+          console.log('game over')
+          this.cameras.main.fade(2000)
+        }else {
+          this.cameras.main.flash(60, 0.9, 0.1, 0.1)
+          this.cameras.main.shake(60, 0.003)
+        }
+        this.destroyCharacter(element)
+        // check index before destroy... or update last indexes
+      }
       return true
     }
 
@@ -365,6 +445,19 @@ class BootScene extends Phaser.Scene {
         return true
       }
     }
+  }
+
+  destroyCharacter (element) {
+    let index = element.index
+    this.map.removeElement(element)
+    for (var i = this.npcs.length - 1; i >= 0; i--) {
+      if(i === index) {
+        this.npcs.splice(i, 1)
+        break
+      } 
+      this.npcs[i].index--
+    }
+    element.destroy()
   }
 
   applyProjectileAttack (projectile, index) {
@@ -383,7 +476,11 @@ class BootScene extends Phaser.Scene {
       origin: origin,
       target: target,
       cellsByTurn: speed,
-      timeToTransition: TIME_TO_ANIMATE
+      timeToTransition: TIME_TO_ANIMATE,
+      max: {
+        i: this.map.cols - 1,
+        j: this.map.rows - 1
+      }
     }))
   }
 }

@@ -10,10 +10,12 @@ export default class Attributes {
     // derivated from dexterity
     this.high = Attributes.initProperty(1)
     this.speed = Attributes.initProperty(1)
+    this.dodge = Attributes.initProperty(1)
     this.updateDexterity(config.dexterity || 1)
 
     // derivated from strength
     this.hp = Attributes.initProperty(1)
+    this.defense = Attributes.initProperty(1)
     this.updateStrength(config.strength || 1)
 
     // derivated from intelligence
@@ -28,11 +30,13 @@ export default class Attributes {
     this.dexterity = dx
     this.setPropertyMaxValue('high', ~~(dx*0.34) + 1)
     this.setPropertyMaxValue('speed', dx*2)
+    this.setPropertyMaxValue('dodge', ~~(dx*0.25) + 1)
   }
 
   updateStrength (st) {
     this.strength = st
     this.setPropertyMaxValue('hp', st*3 + 10)
+    this.setPropertyMaxValue('defense', st*(0.4) + 1)
   }
 
   setProperty (property, value) {
@@ -59,11 +63,40 @@ export default class Attributes {
   setPropertyMaxValue (property, value) {
     let prop = this[property]
     prop.maxValue = value
+    if (prop.maxValue>20) { // max value 20
+      prop.maxValue = 20
+    }
     prop.value = value
   }
 
   addPropertyMod (property, mod) {
     this[property].mods += mod
+  }
+
+  getPropertyPercentage (property) {
+    let prop = this[property]
+    return this.getProperty(property) / prop.maxValue
+  }
+
+  // 1d20 pifia
+  // bad
+  // apenas
+  // bien
+  // critico
+  save (property, value) {
+    let current = this.getProperty(property)
+    if (current < value) return 0
+
+    let d = ~~(Math.random()*20) + 1
+    if(d === 1) {
+      return -2
+    } else if(d <= current) {
+      return 0
+    } else if(d < 20){
+      return 1
+    } else {
+      return 2
+    }
   }
 
   static initProperty(value) {
