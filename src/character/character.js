@@ -21,12 +21,14 @@ export default class Character {
     let scene = config.scene
     this.sprite = scene.add.sprite(0, 0, 'characters')
     this.sprite.setOrigin(0.5, 0.5)
-    this.position = {i: config.i, j: config.j}
+    this.sprite.x = config.i*SCALE*WIDTH
+    this.sprite.y = config.j*SCALE*WIDTH
+    this.position = {i: 0, j: 0}
     this.speed = {x: 0, y: 0}
     this.acceleration = {x: 0, y: 0}
 
-    this.futurePosition = {i: this.position.i, j: this.position.j}
-    this.fixPositionToGrid()
+    this.futurePosition = {i: config.i, j: config.j}
+    //this.fixPositionToGrid()
 
     this.timeFromTransition = 0
     this.fixedTimeForTransition = 0
@@ -249,7 +251,6 @@ export default class Character {
 
   assignOrder (order) {
     this.order = order
-    console.log(order)
     let orderData = ORDER_DATA[order.code]
     this.order.priority = this.attrs.getProperty('speed')*orderData.speed
     this.order.character = this

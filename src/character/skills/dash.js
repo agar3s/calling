@@ -4,7 +4,7 @@ import Skill from './skill'
 export default class Dash extends Skill {
   constructor (params) {
     super(params)
-    this.maxCharges = 2
+    this.maxCharges = 0
     this.charges = this.maxCharges
   }
 

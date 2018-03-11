@@ -82,8 +82,8 @@ class BootScene extends Phaser.Scene {
 
     this.player = new Player({
       scene: this,
-      i: 3,
-      j: 5,
+      i: 1,
+      j: 3,
       animations: {idle: 'idle-red'},
       attrs: {
         dexterity: 5
@@ -92,12 +92,13 @@ class BootScene extends Phaser.Scene {
     this.player.addSkill(new DoubleJump({character: this.player}))
     this.player.addSkill(new Dash({character: this.player}))
     this.map.updateCharacterLocation(this.player)
+    this.player.updateToFuturePosition()
 
     this.npcs = []
 
-    for (var i = 0; i< 1; i++) {
-      let j = ~~(Math.random()*3) + 2
-      let i = ~~(Math.random()*4) + 1
+    for (var i = 0; i< 10; i++) {
+      let j = ~~(Math.random()*3) + 1
+      let i = ~~(Math.random()*20) + 1
       let npc = new Character({
         scene: this,
         i: i,
@@ -106,6 +107,7 @@ class BootScene extends Phaser.Scene {
       })
       let index = this.npcs.push(npc)
       this.map.updateCharacterLocation(npc)
+      npc.updateToFuturePosition()
       npc.npcIndex = index
     }
 
@@ -204,21 +206,33 @@ class BootScene extends Phaser.Scene {
         }
       } else if (this.control.isMeleeAttack()) {
         if (this.cursor.isMeleeMode()) {
-          this.setOrder(ORDER_CODES.ATTACK_MELEE)
-          this.cursor.hide()
+          if (this.cursor.position.i === this.player.position.i && this.cursor.position.j === this.player.position.j){
+            this.cursor.hide()
+            this.delayTransition(STATUS.WAITING, 200)
+            actionTaken = false
+          } else {
+            this.setOrder(ORDER_CODES.ATTACK_MELEE)
+            this.cursor.hide()
+          }
         } else {
           this.showCursor(this.player.attrs.getProperty('meleeRange'), this.cursor.MODES.MELEE)
         }
       } else if (this.control.isRangedAttack()) {
         if (this.cursor.isRangedMode()) {
-          this.setOrder(ORDER_CODES.ATTACK_RANGED)
-          this.cursor.hide()
+          if (this.cursor.position.i === this.player.position.i && this.cursor.position.j === this.player.position.j){
+            this.cursor.hide()
+            this.delayTransition(STATUS.WAITING, 200)
+            actionTaken = false
+          } else {
+            this.setOrder(ORDER_CODES.ATTACK_RANGED)
+            this.cursor.hide()
+          }
         } else {
           this.showCursor(this.player.attrs.getProperty('rangedRange'), this.cursor.MODES.RANGED)
         }
       } else if (this.control.isCancel()) {
         this.cursor.hide()
-        this.delayTransition(STATUS.WAITING, 1)
+        this.delayTransition(STATUS.WAITING, 200)
         actionTaken = false
       } else {
         actionTaken = false
@@ -261,7 +275,7 @@ class BootScene extends Phaser.Scene {
   }
 
   processTurn () {
-    let possibleOrders = [ORDER_CODES.LEFT, ORDER_CODES.RIGHT]
+    let possibleOrders = [ORDER_CODES.DOWN, ORDER_CODES.LEFT, ORDER_CODES.RIGHT, ORDER_CODES.JUMP, ORDER_CODES.JUMP_LEFT, ORDER_CODES.JUMP_RIGHT]
     let orders = this.npcs.map(npc => {
       let randomOrder = possibleOrders[~~(Math.random()*possibleOrders.length)]
       return npc.assignOrder({code: randomOrder})
@@ -271,7 +285,6 @@ class BootScene extends Phaser.Scene {
     orders.sort((a, b) => {
       return b.priority - a.priority
     })
-    console.log(orders)
 
     orders.forEach(order => {
       let character = order.character
@@ -279,13 +292,10 @@ class BootScene extends Phaser.Scene {
       let action = character.processOrder(cells, TIME_TO_ANIMATE)
       
       character.enableTime(TIME_TO_ANIMATE, 1)
-      console.log(action)
       if (action.type === 'attack') {
         if (action.melee) {
           let target = this.map.getElementInMap(action.melee.i, action.melee.j)
           this.applyAttack(target, action.melee)
-          this.cameras.main.flash(100, 0.9, 0.1, 0.1)
-          this.cameras.main.shake(100, 0.003)
         }
         if (action.ranged) {
           let {origin, target, speed} = action.ranged
@@ -298,6 +308,8 @@ class BootScene extends Phaser.Scene {
       if (action.type === 'movement') {
       }
     })
+
+    this.projectiles.forEach(projectile => projectile.resumeTime())
 
     this.turnTransition = TIME_TO_ANIMATE
     this.status = STATUS.TRANSITION
@@ -313,8 +325,13 @@ class BootScene extends Phaser.Scene {
       npc.disableTime()
     })
 
-    this.projectiles.forEach(projectile => {
+    this.projectiles.forEach((projectile, index) => {
       projectile.update(dt)
+      projectile.updatePosition()
+      if (projectile.hit) {
+        this.applyProjectileAttack(projectile, index)
+      }
+      projectile.pauseTime()
     })
   }
 
@@ -325,18 +342,39 @@ class BootScene extends Phaser.Scene {
       npc.update(dt)
     })
 
-    this.projectiles.forEach(projectile => {
+    this.projectiles.forEach((projectile, index) => {
       projectile.update(dt)
+      if (projectile.doCheckCollision()) {
+        this.applyProjectileAttack(projectile, index)
+      }
     })
   }
 
   applyAttack (target, attack) {
-    console.log('attack to', target)
     let element = target.element
-    if(target.type === 'character') {
+    if (target.type === 'character') {
       let index = element.npcIndex
+      this.cameras.main.flash(100, 0.9, 0.1, 0.1)
+      this.cameras.main.shake(100, 0.003)
       element.destroy()
-     }
+      return true
+    }
+
+    if(target.type === 'tile') {
+      if(!target.element.traspasable){
+        return true
+      }
+    }
+  }
+
+  applyProjectileAttack (projectile, index) {
+    let target = this.map.getElementInMap(projectile.position.i, projectile.position.j)
+    let attack = projectile.getAttackData()
+    let collide = this.applyAttack(target, attack)
+    if (collide) {
+      projectile.destroy()
+      this.projectiles.splice(index, 1)
+    }
   }
 
   throwProjectile (origin, target, speed) {
@@ -344,7 +382,8 @@ class BootScene extends Phaser.Scene {
       scene: this,
       origin: origin,
       target: target,
-      baseSpeed: speed/(TIME_TO_ANIMATE)
+      cellsByTurn: speed,
+      timeToTransition: TIME_TO_ANIMATE
     }))
   }
 }

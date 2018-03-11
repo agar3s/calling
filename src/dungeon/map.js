@@ -30,14 +30,15 @@ export default class Map {
     this.cols = this.tiles[0].length
 
     this.grid = scene.add.graphics(0,0)
-    this.grid.lineStyle(1, 0x220022, 0.05)
-    this.grid.fillStyle(0x220022, 0.05)
+    this.grid.lineStyle(1, 0x220022, 0.01)
+    this.grid.fillStyle(0x220022, 0.01)
     for (var j = 0; j < 50; j++) {
       for (var i = 0; i < 50; i++) {
         //this.grid.fillRect(i*SCALE*WIDTH + 1 - SCALE*WIDTH/2, j*SCALE*WIDTH + 1 - SCALE*WIDTH/2, SCALE*WIDTH - 2, SCALE*WIDTH - 2)
         this.grid.strokeRect(i*TS - TS/2, j*TS - TS/2, TS, TS)
       }
     }
+    console.log(this)
   }
 
   getMapSurrondings (indexI, indexJ, range) {
@@ -119,8 +120,8 @@ let basicMap =
 6,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,6
 6,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,6
 6,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,6
-6,1,2,8,8,8,8,0,1,1,2,8,0,1,1,2,8,8,8,8,8,6
-6,2,2,8,8,8,8,0,6,6,2,8,0,6,6,2,8,8,8,8,8,6
+6,1,2,8,8,8,8,8,8,8,8,8,0,1,1,2,8,8,8,8,8,6
+6,2,2,8,8,8,8,0,1,1,2,8,0,6,6,2,8,8,8,8,8,6
 6,2,8,8,8,3,4,0,6,6,2,8,0,6,6,2,8,8,8,8,8,6
 6,2,8,8,8,8,9,0,6,6,2,8,0,6,6,2,8,8,8,8,8,6
 6,1,1,1,1,1,1,5,6,6,2,1,0,6,6,7,1,1,1,1,1,6`
