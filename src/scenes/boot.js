@@ -231,6 +231,7 @@ class BootScene extends Phaser.Scene {
     if (this.status === STATUS.WAITING) {
       // read keys
       if (this.control.isUp()) {
+        // character can jump?
         this.setOrder(ORDER_CODES.JUMP)
       } else if (this.control.isLeft()) {
         this.setOrder(ORDER_CODES.LEFT)

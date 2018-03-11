@@ -49,6 +49,8 @@ export default class Character {
 
     this.meleeWeapon = undefined
     this.rangedWeapon = undefined
+
+    this.lastDirection = 0
   }
 
   update (dt) {
@@ -73,6 +75,7 @@ export default class Character {
     
     let cellsToFall = this.cellsToFall
     this.acceleration.y = WIDTH*SCALE*(cellsToFall)/(transitionTime*transitionTime)
+    this.lastDirection = 0
   }
 
   applyLateralSpeed (transitionTime, surrondings, direction) {
@@ -89,6 +92,7 @@ export default class Character {
       this.speed.x = direction*WIDTH*SCALE*steps/transitionTime
       this.futurePosition.i += direction
       this.sprite.anims.play(this.animations.move)
+      this.lastDirection = direction
     }
     if ((!c&&!d) || (c&&!e)) {
       this.futurePosition.j += this.cellsToFall
@@ -97,6 +101,7 @@ export default class Character {
       // if fall can't jump again
       this.attrs.setProperty('high', 0)
     } else {
+      this.lastDirection = 0
       this.attrs.restoreProperty('high')
     }
 
@@ -118,6 +123,9 @@ export default class Character {
       this.applyJumpSpeed(transitionTime)
       this.futurePosition.j -= 1
       this.sprite.anims.play(this.animations.jump)
+    } else if(!e && !canJump){
+      this.futurePosition.j += 1
+      this.fall(transitionTime)
     }
   }
 
@@ -130,6 +138,7 @@ export default class Character {
       this.fall(transitionTime)
       this.attrs.setProperty('high', 0)
     }
+    this.lastDirection = 0
   }
 
   turnLeft (transitionTime, surrondings) {
@@ -146,10 +155,13 @@ export default class Character {
     let steps = 1
     let a = surrondings[center - 1][center]
     let b = surrondings[center - 1][center + direction]
+    let d = surrondings[center + 1][center + direction]
     let e = surrondings[center + 1][center]
     a = a && a.rigid
     b = b && b.rigid
+    d = d && d.rigid
     e = e && e.rigid
+
     if (e) {
       this.attrs.restoreProperty('high')
     }
@@ -163,6 +175,19 @@ export default class Character {
       if (!b) {
         this.futurePosition.i += direction
         this.speed.x = direction*WIDTH*SCALE*steps/transitionTime
+        this.lastDirection = direction
+      } else {
+        this.lastDirection = 0
+      }
+    } else if (!e) {
+      this.futurePosition.j += 1
+      this.fall(transitionTime)
+      if (!d) {
+        this.futurePosition.i += direction
+        this.speed.x = direction*WIDTH*SCALE*steps/transitionTime
+        this.lastDirection = direction
+      } else {
+        this.lastDirection = 0
       }
     }
   }
@@ -183,14 +208,51 @@ export default class Character {
 
   pass (transitionTime, surrondings) {
     let center = this.actionRange
+    let a = surrondings[center - 1][center]
+    let b = surrondings[center - 1][center + this.lastDirection]
+    let c = surrondings[center][center + this.lastDirection]
+    let d = surrondings[center + 1][center + this.lastDirection]
     let e = surrondings[center + 1][center]
+    b = b && b.traspasable
     e = e && e.rigid
-    if (!e) {
+    c = c && c.rigid
+    d = d && d.rigid
+
+    if (this.attrs.getProperty('high') > 0 && !e) {
+      if (b && this.lastDirection) {
+        let preLastDirection = this.lastDirection
+        this.futurePosition.i += this.lastDirection
+        this.speed.x = this.lastDirection*WIDTH*SCALE/transitionTime
+        this.applyJumpSpeed(transitionTime)
+        this.futurePosition.j -= 1
+        this.attrs.incrementProperty('high', -1)
+        this.lastDirection = preLastDirection
+      } else if(!this.lastDirection && a) {
+        this.applyJumpSpeed(transitionTime)
+        this.futurePosition.j -= 1
+        this.attrs.incrementProperty('high', -1)
+      }
+    } else if (!e) {
+      // if there is space in front and there is a previous direction
+      if (!d && this.lastDirection) {
+        this.futurePosition.i += this.lastDirection
+        this.speed.x = this.lastDirection*WIDTH*SCALE/transitionTime
+      } else {
+        if (!c && d) {
+          this.futurePosition.i += this.lastDirection
+          this.speed.x = this.lastDirection*WIDTH*SCALE/transitionTime
+          this.futurePosition.j -= 1
+          this.cellsToFall = 0
+        }
+        this.lastDirection = 0
+      }
       this.futurePosition.j += 1
       this.fall(transitionTime)
       // if fall can't jump again
       this.attrs.setProperty('high', 0)
     } else {
+      this.remainingHigh = 0
+      this.lastDirection = 0
       this.sprite.anims.play(this.animations.idle)
       this.attrs.restoreProperty('high')
     }
@@ -320,6 +382,7 @@ export default class Character {
         this.pass(timeFromTransition, cells)
         return {type: 'talk'}
       case ORDER_CODES.ATTACK_MELEE:
+        this.pass(timeFromTransition, cells)
         let melee = this.getAttackData()
         melee.i = this.order.i
         melee.j = this.order.j
@@ -330,6 +393,7 @@ export default class Character {
         }
         return {type: 'attack', melee}
       case ORDER_CODES.ATTACK_RANGED:
+        this.pass(timeFromTransition, cells)
         let ranged = this.getRangedAttackData()
         ranged.target = {i: this.order.i, j: this.order.j}
         ranged.origin = {i: this.position.i, j: this.position.j}
