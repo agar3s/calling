@@ -99,6 +99,20 @@ export default class Attributes {
     }
   }
 
+  getStrengthModifier (maxMod) {
+    let base = this.strength
+    let roll = ~~(Math.random()*20) + 1
+    if (roll === 1){
+      return 0
+    }
+    console.log(roll, base)
+    if((roll + base) >= 20) {
+      console.log('critic! X'+maxMod)
+      return maxMod
+    }
+    return 1
+  }
+
   static initProperty(value) {
     return {
       value: value,

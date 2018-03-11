@@ -32,6 +32,8 @@ export default class Projectil {
 
     this.maxPosition = {i: config.max.i, j: config.max.j}
 
+    this.damage = config.damage
+
     //DEBUG
 /*    this.location = config.scene.add.graphics(0, 0)
     console.log(this.maxPosition)*/

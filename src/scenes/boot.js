@@ -4,6 +4,7 @@ import Control from '../util/control'
 import Cursor from '../util/cursor'
 import Map from '../dungeon/map'
 import Projectile from '../elements/projectile'
+import Weapon from '../elements/weapon'
 
 import DoubleJump from '../character/skills/doubleJump'
 import Dash from '../character/skills/dash'
@@ -166,11 +167,17 @@ class BootScene extends Phaser.Scene {
     this.map.updateCharacterLocation(this.player)
     this.player.updateToFuturePosition()
 
+    let basicSword = new Weapon({dices:'3d4', weight: 4, damageMods: 1})
+    let basicBow = new Weapon({dices:'1d4', weight: 2, damageMods: 0})
+
+    this.player.setMeleeWeapon(basicSword)
+    this.player.setRangedWeapon(basicBow)
+
     this.npcs = []
 
     for (var i = 0; i< 10; i++) {
       let j = ~~(Math.random()*3) + 1
-      let i = ~~(Math.random()*20) + 1
+      let i = ~~(Math.random()*13) + 1
       let npc = new Character({
         scene: this,
         i: i,
@@ -370,8 +377,8 @@ class BootScene extends Phaser.Scene {
           this.applyAttack(target, action.melee)
         }
         if (action.ranged) {
-          let {origin, target, speed} = action.ranged
-          this.throwProjectile(origin, target, speed)
+          let {origin, target, speed, damage} = action.ranged
+          this.throwProjectile(origin, target, speed, damage)
         }
       }
 
@@ -470,13 +477,14 @@ class BootScene extends Phaser.Scene {
     }
   }
 
-  throwProjectile (origin, target, speed) {
+  throwProjectile (origin, target, speed, damage) {
     this.projectiles.push(new Projectile({
       scene: this,
       origin: origin,
       target: target,
       cellsByTurn: speed,
       timeToTransition: TIME_TO_ANIMATE,
+      damage: damage,
       max: {
         i: this.map.cols - 1,
         j: this.map.rows - 1

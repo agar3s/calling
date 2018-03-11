@@ -46,6 +46,9 @@ export default class Character {
     this.hpBar.x = this.sprite.x - SCALE*WIDTH/2
     this.hpBar.y = this.sprite.y - SCALE*WIDTH/2 - 4*SCALE
     this.drawHp()
+
+    this.meleeWeapon = undefined
+    this.rangedWeapon = undefined
   }
 
   update (dt) {
@@ -222,17 +225,28 @@ export default class Character {
   }
 
   getAttackData () {
+    let damage = this.meleeWeapon.getDamage()
+    let weaponSpeed = this.attrs.getProperty('speed')/this.meleeWeapon.weight
+    let damageModifier = this.attrs.getStrengthModifier(2)
+    if (damageModifier === 0) {
+      console.log('miss')
+    }
+    console.log('melee', 'damage:', damage, 'mod:', damageModifier, 'speed', weaponSpeed)
     return {
-      hit: 10,
+      hit: damage*damageModifier,
       type: 'melee',
-      speed: 5
+      speed: weaponSpeed
     }
   }
 
   getRangedAttackData () {
+    let damage = this.rangedWeapon.getDamage()
+    let weaponSpeed = this.attrs.getProperty('speed')/this.meleeWeapon.weight
+    let damageModifier = this.attrs.getStrengthModifier(1.5)
+    console.log('ranged', 'damage:', damage, 'mod:', damageModifier, 'speed', weaponSpeed)
     return {
-      hit: 2,
-      speed: 1.8,
+      hit: damage*damageModifier,
+      speed: weaponSpeed,
       type: 'ranged'
     }
   }
@@ -329,26 +343,24 @@ export default class Character {
   }
 
   applyHit (attack) {
-    console.log(attack)
-    console.log(this.attrs.getProperty('hp'))
-    console.log(this.attrs.getProperty('dodge'), 'a')
     let dodged = this.attrs.save('dodge', attack.speed || 3)
-    console.log('dodge', dodged)
+
     if (dodged===2) {
-      console.log('dodged!!!!!')
+      console.log('esquivado')
       return
     } else if (dodged === 1){
+      console.log('danio a la mitad')
       attack.hit /= 2
-      console.log('save dodge')
     } else if(dodged<0) {
+      console.log('mas danio', dodged)
       attack.hit *= -dodged
-      console.log('pifia')
     }
+
     let defense = this.attrs.getProperty('defense')
     let damage = attack.hit - defense
     this.attrs.incrementProperty('hp', -damage)
     this.drawHp()
-    if(damage>0){
+    if (damage > 0) {
       this.sprite.tint = 0x990000
       setTimeout(() => {
         this.sprite.tint = undefined
@@ -369,5 +381,13 @@ export default class Character {
 
   shake () {
 
+  }
+
+  setMeleeWeapon (weapon) {
+    this.meleeWeapon = weapon
+  }
+
+  setRangedWeapon (weapon) {
+    this.rangedWeapon = weapon
   }
 }

@@ -94,14 +94,16 @@ class Tile {
     this.y = this.yOffset + this.j * TS
 
     let invert = (this.tile < 0)?-1:1
-    params.scene.add.tileSprite(
-      this.x,
-      this.y,
-      this.width,
-      this.width,
-      'platforms',
-      this.tile * invert
-    ).setScale(invert * this.scale, this.scale)
+    if(this.tile !== 3) {
+      params.scene.add.tileSprite(
+        this.x,
+        this.y,
+        this.width,
+        this.width,
+        'platforms',
+        this.tile * invert
+      ).setScale(invert * this.scale, this.scale)
+    }
 
     this.properties = tileProperties[this.tile]
     this.element = undefined
@@ -121,15 +123,18 @@ class Tile {
 }
 
 let basicMap = 
-`6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6,6
-6,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,6
-6,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,6
-6,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,6
-6,1,2,8,8,8,8,8,8,8,8,8,0,1,1,2,8,8,8,8,8,6
-6,2,2,8,8,8,8,0,1,1,2,8,0,6,6,2,8,8,8,8,8,6
-6,2,8,8,8,3,4,0,6,6,2,8,0,6,6,2,8,8,8,8,8,6
-6,2,8,8,8,8,9,0,6,6,2,8,0,6,6,2,8,8,8,8,8,6
-6,1,1,1,1,1,1,5,6,6,2,1,0,6,6,7,1,1,1,1,1,6`
+`0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0
+0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0
+0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0
+0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0
+0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0
+0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0
+0,0,0,3,3,3,3,3,3,3,3,3,0,0,0,0,3,3,3,0
+0,0,0,3,3,3,3,0,0,0,0,3,0,0,0,0,3,3,3,0
+0,0,3,3,3,1,1,0,0,0,0,3,0,0,0,0,3,3,3,0
+0,0,3,3,3,3,3,0,0,0,0,3,0,0,0,0,3,3,3,0
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0`
 
 let tileProperties = {
   '0': {
@@ -138,37 +143,13 @@ let tileProperties = {
   },
   '1': {
     rigid: true,
-    traspasable: false
+    traspasable: true
   },
   '2': {
     rigid: true,
     traspasable: false
   },
   '3': {
-    rigid: true,
-    traspasable: true
-  },
-  '4': {
-    rigid: true,
-    traspasable: true
-  },
-  '5': {
-    rigid: true,
-    traspasable: false
-  },
-  '6': {
-    rigid: true,
-    traspasable: false
-  },
-  '7': {
-    rigid: true,
-    traspasable: false
-  },
-  '8': {
-    rigid: false,
-    traspasable: true
-  },
-  '9': {
     rigid: false,
     traspasable: true
   }

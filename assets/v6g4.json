@@ -1,0 +1,116 @@
+{
+  "title": "7DRL - Misi\u00f3n 01",
+  "created_at": "2018-03-09T03:47:04Z",
+  "url_key": "v6g4",
+  "data": {
+    "stitches": {
+      "bienvenidaLADURA": {
+        "content": [
+          "Bienvenida, LADURA. Nos alegra tenerte entre nosotros de nuevo.",
+          {
+            "divert": "lADIOSANosPidiQu"
+          },
+          {
+            "pageNum": 1
+          },
+          {
+            "pageLabel": " La bienvenida"
+          }
+        ]
+      },
+      "lADIOSANosPidiQu": {
+        "content": [
+          "LADIOSA nos pidi\u00f3 que te traj\u00e9ramos de nuevo a la vida. Al parecer tiene algo importante que hablar contigo.",
+          {
+            "ifConditions": null,
+            "linkPath": "quQuieresSaberAc",
+            "notIfConditions": null,
+            "option": "LADIOSA"
+          },
+          {
+            "ifConditions": null,
+            "linkPath": "quQuieresSaberAc1",
+            "notIfConditions": null,
+            "option": "Invocaci\u00f3n"
+          },
+          {
+            "ifConditions": null,
+            "linkPath": "quQuieresSaberAc2",
+            "notIfConditions": null,
+            "option": "..."
+          }
+        ]
+      },
+      "quQuieresSaberAc": {
+        "content": [
+          "\u00bfQu\u00e9 quieres saber acerca de LADIOSA?",
+          {
+            "ifConditions": null,
+            "linkPath": "noLoSEllaSimplem",
+            "notIfConditions": null,
+            "option": "\u00bfPara qu\u00e9 me quiere?"
+          }
+        ]
+      },
+      "siQuieresSaberMs": {
+        "content": [
+          "Si quieres saber m\u00e1s, tendr\u00e1s que pregunt\u00e1rselo a ella.",
+          {
+            "runOn": true
+          },
+          {
+            "pageNum": -1
+          },
+          {
+            "pageLabel": " La raz\u00f3n"
+          }
+        ]
+      },
+      "buenocomoSiempre": {
+        "content": [
+          "Bueno...como siempre, sacrificando un par de seres."
+        ]
+      },
+      "noLoSEllaSimplem": {
+        "content": [
+          "No lo s\u00e9. Ella simplemente nos pidi\u00f3 que hici\u00e9ramos lo que fuera necesario para traerte de nuevo a ELMUNDO.",
+          {
+            "divert": "siQuieresSaberMs"
+          }
+        ]
+      },
+      "quQuieresSaberAc2": {
+        "content": [
+          "\u00bfQu\u00e9 quieres saber acerca de m\u00ed?",
+          {
+            "ifConditions": null,
+            "linkPath": null,
+            "notIfConditions": null,
+            "option": "\u00bfA qu\u00e9 raza perteneces?"
+          }
+        ]
+      },
+      "quQuieresSaberAc1": {
+        "content": [
+          "\u00bfQu\u00e9 quieres saber acerca de la invocaci\u00f3n?",
+          {
+            "ifConditions": null,
+            "linkPath": "buenocomoSiempre",
+            "notIfConditions": null,
+            "option": "\u00bfC\u00f3mo me invocaron?"
+          }
+        ]
+      }
+    },
+    "optionMirroring": true,
+    "allowCheckpoints": false,
+    "editorData": {
+      "textSize": 0,
+      "playPoint": "buenocomoSiempre",
+      "authorName": "Carenalga",
+      "libraryVisible": false
+    },
+    "initial": "bienvenidaLADURA"
+  },
+  "updated_at": "2018-03-10T18:51:41Z"
+}
