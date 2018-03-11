@@ -10,6 +10,7 @@ export default class Projectil {
     let TS = SCALE*WIDTH
     this.sprite.x = config.origin.i * TS
     this.sprite.y = config.origin.j * TS
+    this.sprite.setScale(SCALE)
     this.target = {i: config.target.i, j: config.target.j}
     this.origin = {i: config.origin.i, j: config.origin.j}
 
@@ -22,7 +23,6 @@ export default class Projectil {
 
     this.baseSpeed = config.baseSpeed * TS
     this.speed.scale(this.baseSpeed)
-    console.log(this.speed)
   }
 
   update (dt) {

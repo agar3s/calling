@@ -213,6 +213,14 @@ export default class Character {
     }
   }
 
+  getRangedAttackData () {
+    return {
+      hit: 2,
+      speed: 1.8,
+      type: 'ranged'
+    }
+  }
+
   attack () {
     // dont fall while attacking
     // has a maximun number of attacks without falling
@@ -283,9 +291,9 @@ export default class Character {
         }
         return {type: 'attack', melee}
       case ORDER_CODES.ATTACK_RANGED:
-        let ranged = this.getAttackData()
-        ranged.i = this.order.i
-        ranged.j = this.order.j
+        let ranged = this.getRangedAttackData()
+        ranged.target = {i: this.order.i, j: this.order.j}
+        ranged.origin = {i: this.position.i, j: this.position.j}
         if (ranged.type === 'ranged') {
           this.attack(timeFromTransition)
         }

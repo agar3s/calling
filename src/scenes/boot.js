@@ -110,12 +110,6 @@ class BootScene extends Phaser.Scene {
     }
 
     this.projectiles = []
-    this.projectiles.push(new Projectile({
-      scene: this,
-      origin: {i: 3, j:2},
-      target: {i: 6, j:3},
-      baseSpeed: 2.5/TIME_TO_ANIMATE
-    }))
 
     // control
     this.control = new Control({
@@ -179,7 +173,7 @@ class BootScene extends Phaser.Scene {
 
     if (this.status === STATUS.TRANSITION) {
       if (this.turnTransition < 0) {
-        this.endTurn()
+        this.endTurn(dt)
         this.delayTransition(STATUS.WAITING, 150)
       } else {
         this.updateTurn(dt)
@@ -291,7 +285,11 @@ class BootScene extends Phaser.Scene {
           let target = this.map.getElementInMap(action.melee.i, action.melee.j)
           this.applyAttack(target, action.melee)
           this.cameras.main.flash(100, 0.9, 0.1, 0.1)
-          this.cameras.main.shake(100,0.003)
+          this.cameras.main.shake(100, 0.003)
+        }
+        if (action.ranged) {
+          let {origin, target, speed} = action.ranged
+          this.throwProjectile(origin, target, speed)
         }
       }
 
@@ -305,7 +303,7 @@ class BootScene extends Phaser.Scene {
     this.status = STATUS.TRANSITION
   }
 
-  endTurn () {
+  endTurn (dt) {
     this.player.update()
     this.player.disableTime()
     this.order = {}
@@ -313,6 +311,10 @@ class BootScene extends Phaser.Scene {
     this.npcs.forEach(npc => {
       npc.update()
       npc.disableTime()
+    })
+
+    this.projectiles.forEach(projectile => {
+      projectile.update(dt)
     })
   }
 
@@ -335,6 +337,15 @@ class BootScene extends Phaser.Scene {
       let index = element.npcIndex
       element.destroy()
      }
+  }
+
+  throwProjectile (origin, target, speed) {
+    this.projectiles.push(new Projectile({
+      scene: this,
+      origin: origin,
+      target: target,
+      baseSpeed: speed/(TIME_TO_ANIMATE)
+    }))
   }
 }
 
