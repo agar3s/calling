@@ -3,6 +3,7 @@ import Character from '../character/character'
 import Control from '../util/control'
 import Cursor from '../util/cursor'
 import Map from '../dungeon/map'
+import Projectile from '../elements/projectile'
 
 import DoubleJump from '../character/skills/doubleJump'
 import Dash from '../character/skills/dash'
@@ -41,6 +42,7 @@ class BootScene extends Phaser.Scene {
     this.load.spritesheet('characters', '../assets/characters.png', {frameWidth: 16, frameHeight: 16})
     this.load.spritesheet('platforms', '../assets/platforms.png', {frameWidth: 16, frameHeight: 16})
     this.load.spritesheet('ui', '../assets/ui.png', {frameWidth: 32, frameHeight: 32})
+    this.load.spritesheet('arrow', '../assets/arrow.png', {frameWidth: 16, frameHeight: 16})
   }
 
   create () {   
@@ -106,6 +108,14 @@ class BootScene extends Phaser.Scene {
       this.map.updateCharacterLocation(npc)
       npc.npcIndex = index
     }
+
+    this.projectiles = []
+    this.projectiles.push(new Projectile({
+      scene: this,
+      origin: {i: 3, j:2},
+      target: {i: 6, j:3},
+      baseSpeed: 2.5/TIME_TO_ANIMATE
+    }))
 
     // control
     this.control = new Control({
@@ -311,6 +321,10 @@ class BootScene extends Phaser.Scene {
     this.player.update(dt)
     this.npcs.forEach(npc => {
       npc.update(dt)
+    })
+
+    this.projectiles.forEach(projectile => {
+      projectile.update(dt)
     })
   }
 
