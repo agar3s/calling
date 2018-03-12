@@ -35,7 +35,7 @@ export default class Map {
     for (var j = 0; j < 50; j++) {
       for (var i = 0; i < 50; i++) {
         //this.grid.fillRect(i*SCALE*WIDTH + 1 - SCALE*WIDTH/2, j*SCALE*WIDTH + 1 - SCALE*WIDTH/2, SCALE*WIDTH - 2, SCALE*WIDTH - 2)
-        this.grid.strokeRect(i*TS - TS/2, j*TS - TS/2, TS, TS)
+        this.grid.strokeRect(i*TS, j*TS, TS, TS)
       }
     }
   }
@@ -172,6 +172,7 @@ let basicMap =
 0,0,0,3,3,3,3,3,3,3,3,3,0,0,0,0,3,3,3,0
 0,0,0,3,3,3,3,0,0,0,0,3,0,0,0,0,3,3,3,0
 0,0,3,3,3,1,1,0,0,0,0,3,0,0,0,0,3,3,3,0
+0,0,3,3,3,3,3,0,0,0,0,3,0,0,0,0,3,3,3,0
 0,0,3,3,3,3,3,0,0,0,0,3,0,0,0,0,3,3,3,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0`
 

@@ -14,6 +14,8 @@ export default class Cursor {
     this.position = {i: 0, j: 0}
     this.x = 0
     this.y = 0
+    this.xOffset = config.xOffset
+    this.yOffset = config.yOffset
 
     this.square = config.scene.add.graphics(0, 0)
     this.range = 1
@@ -31,7 +33,7 @@ export default class Cursor {
     let j = this.position.j
     this.square.clear()
     this.square.lineStyle(1, COLORS[this.mode], 1)
-    this.square.strokeRect(i*SCALE*WIDTH + 1 - SCALE*WIDTH/2, j*SCALE*WIDTH + 1 - SCALE*WIDTH/2, SCALE*WIDTH - 2, SCALE*WIDTH - 2)
+    this.square.strokeRect(i*SCALE*WIDTH + 1, j*SCALE*WIDTH + 1, SCALE*WIDTH - 2, SCALE*WIDTH - 2)
   }
 
   setRange (range) {

@@ -8,8 +8,11 @@ export default class Projectil {
     this.sprite = scene.add.sprite(0, 0, 'arrow')
     this.sprite.setOrigin(0.5, 0.5)
 
-    this.sprite.x = config.origin.i * TS
-    this.sprite.y = config.origin.j * TS
+    this.xOffset = config.xOffset
+    this.yOffset = config.yOffset
+
+    this.sprite.x = config.origin.i * TS + config.xOffset
+    this.sprite.y = config.origin.j * TS + config.yOffset
     this.sprite.setScale(SCALE)
     this.target = {i: config.target.i, j: config.target.j}
     this.origin = {i: config.origin.i, j: config.origin.j}
@@ -36,8 +39,7 @@ export default class Projectil {
     this.launcher = config.launcher
 
     //DEBUG
-/*    this.location = config.scene.add.graphics(0, 0)
-    console.log(this.maxPosition)*/
+    //this.location = config.scene.add.graphics(0, 0)
   }
 
   update (dt) {
@@ -53,8 +55,8 @@ export default class Projectil {
   }
 
   updatePosition () {
-    let arrowX = this.sprite.x+this.speed.x*TS*0.35
-    let arrowY = this.sprite.y+this.speed.y*TS*0.35
+    let arrowX = this.sprite.x+this.speed.x*TS*0.35 - this.xOffset
+    let arrowY = this.sprite.y+this.speed.y*TS*0.35 - this.yOffset
     this.position.i = Math.round(arrowX/TS)
     this.position.j = Math.round(arrowY/TS)
     // check arrow outside 
@@ -71,11 +73,13 @@ export default class Projectil {
     )
     let distance = v.length()
     this.hit = distance < TS*0.4
-    /*
-    this.location.clear()
+    
+    /*this.location.clear()
     this.location.fillStyle(this.hit?0x994433:0x449933, 0.2)
-    this.location.fillRect((this.position.i-0.5)*TS, (this.position.j-0.5)*TS, TS, TS)
+    this.location.fillRect((this.position.i)*TS, (this.position.j)*TS, TS, TS)
+    console.log(this.position)
     */
+    
   }
 
   checkOutsideBounds () {

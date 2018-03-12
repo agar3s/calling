@@ -21,8 +21,10 @@ export default class Character {
     let scene = config.scene
     this.sprite = scene.add.sprite(0, 0, 'characters')
     this.sprite.setOrigin(0.5, 0.5)
-    this.sprite.x = config.i*SCALE*WIDTH
-    this.sprite.y = config.j*SCALE*WIDTH
+    this.xOffset = config.xOffset
+    this.yOffset = config.yOffset
+    this.sprite.x = config.i*SCALE*WIDTH + this.xOffset
+    this.sprite.y = config.j*SCALE*WIDTH + this.yOffset
     this.position = {i: 0, j: 0}
     this.speed = {x: 0, y: 0}
     this.acceleration = {x: 0, y: 0}
@@ -269,8 +271,8 @@ export default class Character {
 
   fixPositionToGrid () {
     let ts = WIDTH * SCALE
-    this.sprite.x = this.position.i*ts
-    this.sprite.y = this.position.j*ts
+    this.sprite.x = this.position.i*ts + this.xOffset
+    this.sprite.y = this.position.j*ts + this.yOffset
   }
 
   updateToFuturePosition () {
@@ -437,7 +439,7 @@ export default class Character {
   drawHp () {
     let hpPercentage = this.attrs.getPropertyPercentage('hp')
     this.hpBar.clear()
-    this.hpBar.fillStyle(0xCC4433, 0.6)
+    this.hpBar.fillStyle(0xCC4433, 0.9)
     this.hpBar.fillRect(1*SCALE, 0, SCALE*(WIDTH - 2)*hpPercentage, 2*SCALE)
   }
 

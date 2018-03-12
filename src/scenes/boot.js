@@ -40,7 +40,7 @@ class BootScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.spritesheet('characters', '../assets/characters.png', {frameWidth: 16, frameHeight: 16})
+    this.load.spritesheet('characters', '../assets/devil_ss.png', {frameWidth: 16, frameHeight: 16})
     this.load.spritesheet('platforms', '../assets/platforms.png', {frameWidth: 16, frameHeight: 16})
     this.load.spritesheet('ui', '../assets/ui.png', {frameWidth: 32, frameHeight: 32})
     this.load.spritesheet('arrow', '../assets/arrow.png', {frameWidth: 16, frameHeight: 16})
@@ -52,8 +52,10 @@ class BootScene extends Phaser.Scene {
     let SCALE = 2
     let WIDTH = 16
     let TS = SCALE*WIDTH // TileSize
-    let xOffset = 0
-    let yOffset = 0
+    let xOffset = 16
+    let yOffset = 16
+    this.xOffset = xOffset
+    this.yOffset = yOffset
     
     this.map = new Map({
       scene: this,
@@ -66,9 +68,9 @@ class BootScene extends Phaser.Scene {
 
     this.anims.create({
       key: 'flying-blue',
-      frames: [{key: 'characters', frame: 2}, {key: 'characters', frame: 3}],
+      frames: [{key: 'characters', frame: 0}, {key: 'characters', frame: 1}],
       repeat: -1,
-      frameRate: 3
+      frameRate: 4
     })
 
     this.anims.create({
@@ -150,6 +152,8 @@ class BootScene extends Phaser.Scene {
       scene: this,
       i: 1,
       j: 3,
+      xOffset: xOffset,
+      yOffset: yOffset,
       animations: {
         idle: 'player-idle',
         jump: 'player-jump',
@@ -182,6 +186,8 @@ class BootScene extends Phaser.Scene {
       let i = ~~(Math.random()*13) + 1
       let npc = new Character({
         scene: this,
+        xOffset: xOffset,
+        yOffset: yOffset,
         i: i,
         j: j,
         animations: {idle: 'flying-blue'}
@@ -201,7 +207,9 @@ class BootScene extends Phaser.Scene {
 
     // target cursor
     this.cursor = new Cursor({
-      scene: this
+      scene: this,
+      xOffset: xOffset,
+      yOffset: yOffset
     })
 
     // experimental turn based order
@@ -217,8 +225,13 @@ class BootScene extends Phaser.Scene {
     }
 
     this.cameraControl = new Phaser.Cameras.Controls.Smoothed(controlConfig)
-    this.cameras.main.startFollow(this.player.sprite, 10)
 
+    //temp
+    this.cameras.main.scrollX = 0
+    this.cameras.main.scrollY = 0
+    this.cameras.main.setBounds(0, 0, this.map.cols*32, this.map.rows*32)
+    this.cameras.main.startFollow(this.player.sprite)
+    console.log(this.cameras.main)
     /*
     effects for camera
     this.cameras.main.flash(100, 0.9, 0.1, 0.1)
@@ -227,7 +240,6 @@ class BootScene extends Phaser.Scene {
   }
 
   update (time, dt) {
-    this.cameraControl.update(dt)
     this.turnTransition -= dt
 
     if (this.status === STATUS.WAITING) {
@@ -491,6 +503,8 @@ class BootScene extends Phaser.Scene {
       cellsByTurn: speed,
       timeToTransition: TIME_TO_ANIMATE,
       damage: damage,
+      xOffset: this.xOffset,
+      yOffset: this.yOffset,
       max: {
         i: this.map.cols - 1,
         j: this.map.rows - 1
@@ -499,7 +513,7 @@ class BootScene extends Phaser.Scene {
   }
 
   flashMessage (text, x, y, time) {
-    let message = this.add.bitmapText(x, y, 'kenney', text, 11)
+    let message = this.add.bitmapText(x, y-5, 'kenney', text, 11)
     message.setOrigin(0.5)
     message.setRotation(Math.PI)
     setTimeout(()=>{
