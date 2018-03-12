@@ -66,8 +66,8 @@ class BootScene extends Phaser.Scene {
     this.xOffset = xOffset
     this.yOffset = yOffset
 
-    this.add.tileSprite(0, 0, 20 * 32, 12 * 32, 'bg_walls');
-    this.add.tileSprite(0, 0, 20 * 32, 12 * 32, 'bg_columns');
+    let walls = this.add.tileSprite(10*32, 6*32, 25 * 32*1.2, 13 * 32, 'bg_walls')
+    walls.scrollFactorX = 1.2
 
     this.map = new Map({
       scene: this,
@@ -76,6 +76,8 @@ class BootScene extends Phaser.Scene {
       xOffset: xOffset,
       yOffset: yOffset
     })
+
+    console.log(this.map.rows, this.map.cols)
 
     this.anims.create({
       key: 'player-jump',
@@ -294,7 +296,7 @@ class BootScene extends Phaser.Scene {
 
     this.npcs = []
 
-    let monsterType = ['devil', 'devil', 'monk', 'monk', 'eye'][~~(Math.random*5)]
+    let monsterType = ['devil', 'devil', 'monk', 'monk', 'eye'][~~(Math.random()*5)]
 
     for (var i = 0; i<5; i++) {
       let j = ~~(Math.random()*3) + 1
@@ -359,6 +361,10 @@ class BootScene extends Phaser.Scene {
     this.cameras.main.flash(100, 0.9, 0.1, 0.1)
     this.cameras.main.shake(100,0.003)
     */
+
+    let columns = this.add.tileSprite(12*32, 6.5*32, 25 * 32 * 2, 13 * 32, 'bg_columns')
+    columns.setAlpha(0.5)
+    columns.scrollFactorX = 2
   }
 
   update(time, dt) {
