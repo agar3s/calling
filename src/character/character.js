@@ -348,7 +348,6 @@ export default class Character {
   assignOrder (order) {
     this.order = order
     let orderData = ORDER_DATA[order.code]
-    console.log(this.attrs)
     this.order.priority = this.attrs.getProperty('speed')*orderData.speed
     this.order.character = this
     return this.order

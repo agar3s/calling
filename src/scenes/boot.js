@@ -285,7 +285,6 @@ class BootScene extends Phaser.Scene {
     this.cameras.main.scrollY = 0
     this.cameras.main.setBounds(0, 0, this.map.cols*32, this.map.rows*32)
     this.cameras.main.startFollow(this.player.sprite)
-    console.log(this.cameras.main)
     /*
     effects for camera
     this.cameras.main.flash(100, 0.9, 0.1, 0.1)
@@ -425,7 +424,6 @@ class BootScene extends Phaser.Scene {
   processTurn () {
     let orders = this.npcs.map(npc => npc.getOrder(this.map, this.player))
     orders.push(this.player.assignOrder(this.order))
-    console.log(orders)
 
     orders.sort((a, b) => {
       return b.priority - a.priority

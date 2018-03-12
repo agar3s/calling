@@ -9,20 +9,28 @@ const MODS = {
   GUARD: 1
 }
 
+const ENEMY_TYPES = {
+  MELEE: 0,
+  RANGE_A: 1,
+  RANGE_B: 2
+}
+
 export default class NPC extends Character {
   constructor (config) {
     super(config)
     
     let basicSword = new Weapon({dices:'1d4', weight: 3, damageMods: 1})
-    //let basicBow = new Weapon({dices:'1d4', weight: 2, damageMods: 0})
+    let basicBow = new Weapon({dices:'2d4', weight: 3, damageMods: 0})
 
     this.setMeleeWeapon(basicSword)
+    this.setRangedWeapon(basicBow)
     this.attrs.addPropertyMod('hp', 2)
     this.attrs.updateStrength(2)
     this.attrs.updateDexterity(1)
     this.attrs.updateIntelligence(1)
 
     this.mod = MODS.IDLE
+    this.attackType = ENEMY_TYPES.MELEE
     this.attrs.setProperty('high', 0)
     //this.player.setRangedWeapon(basicBow)
   }
@@ -40,30 +48,34 @@ export default class NPC extends Character {
     let vd = jDistance<0?-1:1 //vertical direction
     if(jDistance===0) vd = 0
     let range = this.attrs.getProperty('sightRange')
-    console.log(iDistance, ld)
-    console.log(jDistance, vd)
-    if(iDistance*ld<=1 && jDistance*vd<=1) {
-      return this.assignOrder({code: ORDER_CODES.ATTACK_MELEE, i: target.position.i, j: target.position.j})
+    let additional = [ORDER_CODES.PASS]
+    if(this.attackType === ENEMY_TYPES.MELEE) {
+      if(iDistance*ld<=1 && jDistance*vd<=1) {
+        return this.assignOrder({code: ORDER_CODES.ATTACK_MELEE, i: target.position.i, j: target.position.j})
+      }
+    }else {
+      additional = additional.concat([ORDER_CODES.ATTACK_RANGED, ORDER_CODES.ATTACK_RANGED, ORDER_CODES.ATTACK_RANGED])
     }
-
-    if(iDistance*ld>range || jDistance*vd>range) {
-      possibleOrders = [ORDER_CODES.LEFT, ORDER_CODES.RIGHT, ORDER_CODES.JUMP, ORDER_CODES.JUMP_LEFT, ORDER_CODES.JUMP_RIGHT, ORDER_CODES.PASS, ORDER_CODES.PASS]
+    if(this.attackType === ENEMY_TYPES.RANGE_B) {
+      
+    }else if(iDistance*ld>range || jDistance*vd>range) {
+      possibleOrders = additional.concat([ORDER_CODES.LEFT, ORDER_CODES.RIGHT, ORDER_CODES.JUMP, ORDER_CODES.JUMP_LEFT, ORDER_CODES.JUMP_RIGHT, ORDER_CODES.PASS])
     } else if(ld===-1 && vd===-1) {
-      possibleOrders = [ORDER_CODES.JUMP_LEFT, ORDER_CODES.JUMP_LEFT, ORDER_CODES.PASS]
+      possibleOrders = additional.concat([ORDER_CODES.JUMP_LEFT, ORDER_CODES.JUMP_LEFT])
     } else if(ld=== 0 && vd===-1) {
-      possibleOrders = [ORDER_CODES.JUMP, ORDER_CODES.JUMP, ORDER_CODES.PASS]
+      possibleOrders = additional.concat([ORDER_CODES.JUMP, ORDER_CODES.JUMP])
     } else if(ld=== 1 && vd===-1) {
-      possibleOrders = [ORDER_CODES.JUMP_RIGHT, ORDER_CODES.JUMP_RIGHT, ORDER_CODES.PASS]
+      possibleOrders = additional.concat([ORDER_CODES.JUMP_RIGHT, ORDER_CODES.JUMP_RIGHT])
     } else if(ld===-1 && vd===0) {
-      possibleOrders = [ORDER_CODES.LEFT, ORDER_CODES.JUMP_LEFT, ORDER_CODES.PASS]
+      possibleOrders = additional.concat([ORDER_CODES.LEFT, ORDER_CODES.JUMP_LEFT])
     } else if(ld=== 1 && vd=== 0) {
-      possibleOrders = [ORDER_CODES.RIGHT, ORDER_CODES.JUMP_RIGHT, ORDER_CODES.PASS]
+      possibleOrders = additional.concat([ORDER_CODES.RIGHT, ORDER_CODES.JUMP_RIGHT])
     } else if(ld===-1 && vd===1) {
-      possibleOrders = [ORDER_CODES.LEFT, ORDER_CODES.LEFT, ORDER_CODES.PASS]
+      possibleOrders = additional.concat([ORDER_CODES.LEFT, ORDER_CODES.LEFT])
     } else if(ld=== 0 && vd=== 1) {
-      possibleOrders = [ORDER_CODES.DOWN, ORDER_CODES.DOWN, ORDER_CODES.PASS]
+      possibleOrders = additional.concat([ORDER_CODES.DOWN, ORDER_CODES.DOWN])
     } else if(ld=== 1 && vd=== 1) {
-      possibleOrders = [ORDER_CODES.RIGHT, ORDER_CODES.RIGHT, ORDER_CODES.PASS]
+      possibleOrders = additional.concat([ORDER_CODES.RIGHT, ORDER_CODES.RIGHT])
     }
     let order = possibleOrders[~~(possibleOrders.length*Math.random())]
     return this.assignOrder({code: order, i: target.position.i, j: target.position.j})
@@ -85,8 +97,3 @@ export default class NPC extends Character {
 
 }
 
-const ENEMY_TYPES = {
-  MELEE: 0,
-  RANGE_A: 1,
-  RANGE_B: 2
-}
