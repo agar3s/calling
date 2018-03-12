@@ -42,6 +42,8 @@ class BootScene extends Phaser.Scene {
 
   preload() {
     this.load.spritesheet('devil', '../assets/devil_ss.png', {frameWidth: 16, frameHeight: 16})
+    this.load.spritesheet('monk', '../assets/monk_ss.png', {frameWidth: 16, frameHeight: 16})
+    this.load.spritesheet('eye', '../assets/eye_ss.png', {frameWidth: 16, frameHeight: 16})
     this.load.spritesheet('platforms', '../assets/platforms.png', {frameWidth: 16, frameHeight: 16})
     this.load.spritesheet('ui', '../assets/ui.png', {frameWidth: 32, frameHeight: 32})
     this.load.spritesheet('arrow', '../assets/arrow.png', {frameWidth: 16, frameHeight: 16})
@@ -66,14 +68,6 @@ class BootScene extends Phaser.Scene {
       yOffset: yOffset
     })
     
-
-    this.anims.create({
-      key: 'flying-blue',
-      frames: [{key: 'devil', frame: 0}, {key: 'devil', frame: 1}],
-      repeat: -1,
-      frameRate: 4
-    })
-
     this.anims.create({
       key: 'player-jump',
       frames: [{key: 'player', frame: 8, duration:2}, {key: 'player', frame: 9}],
@@ -168,8 +162,8 @@ class BootScene extends Phaser.Scene {
       },
       attrs: {
         dexterity: 2,
-        strength: 2,
-        intelligence: 2
+        strength: 3,
+        intelligence: 3
       }
     })
     this.player.addSkill(new DoubleJump({character: this.player}))
@@ -225,25 +219,91 @@ class BootScene extends Phaser.Scene {
       repeat: 0,
       frameRate: 4
     })
+
+    this.anims.create({
+      key: 'monk-idle',
+      frames: [{key: 'monk', frame: 0}, {key: 'monk', frame: 1}],
+      repeat: 1,
+      frameRate: 4
+    })
+
+    this.anims.create({
+      key: 'monk-move',
+      frames: [{key: 'monk', frame: 2}, {key: 'monk', frame: 3}],
+      repeat: 0,
+      frameRate: 4
+    })
+
+    this.anims.create({
+      key: 'monk-guard',
+      frames: [{key: 'monk', frame: 4}, {key: 'monk', frame: 5}],
+      repeat: 1,
+      frameRate: 4
+    })
+
+    this.anims.create({
+      key: 'monk-attack',
+      frames: [{key: 'monk', frame: 6}, {key: 'monk', frame: 7}, {key: 'monk', frame: 6}],
+      repeat: 0,
+      frameRate: 4
+    })
+
+    this.anims.create({
+      key: 'monk-jump',
+      frames: [{key: 'monk', frame: 8}, {key: 'monk', frame: 9}, {key: 'monk', frame: 8}],
+      repeat: 0,
+      frameRate: 4
+    })
+
+    this.anims.create({
+      key: 'monk-fall',
+      frames: [{key: 'monk', frame: 10}, {key: 'monk', frame: 11}, {key: 'monk', frame: 10}],
+      repeat: 0,
+      frameRate: 4
+    })
+
+    this.anims.create({
+      key: 'eye-idle',
+      frames: [{key: 'eye', frame: 0}, {key: 'eye', frame: 1}],
+      repeat: 1,
+      frameRate: 4
+    })
+
+    this.anims.create({
+      key: 'eye-guard',
+      frames: [{key: 'eye', frame: 2}, {key: 'eye', frame: 3}],
+      repeat: 1,
+      frameRate: 4
+    })
+
+    this.anims.create({
+      key: 'eye-attack',
+      frames: [{key: 'eye', frame: 4}, {key: 'eye', frame: 5}, {key: 'eye', frame: 4}],
+      repeat: 0,
+      frameRate: 4
+    })
+
     this.npcs = []
+
+    let monsterType = ['devil', 'devil', 'monk', 'monk', 'eye'][~~(Math.random*5)]
 
     for (var i = 0; i<5; i++) {
       let j = ~~(Math.random()*3) + 1
       let i = ~~(Math.random()*13) + 1
       let npc = new NPC({
         scene: this,
-        key: 'devil',
+        key: monsterType,
         xOffset: xOffset,
         yOffset: yOffset,
         i: i,
         j: j,
         animations: {
-          idle: 'devil-idle',
-          guard: 'devil-guard',
-          move: 'devil-move',
-          attack: 'devil-attack',
-          jump: 'devil-jump',
-          fall: 'devil-fall'
+          idle: `${monsterType}-idle`,
+          guard: `${monsterType}-guard`,
+          move: `${monsterType}-move`,
+          attack: `${monsterType}-attack`,
+          jump: `${monsterType}-jump`,
+          fall: `${monsterType}-fall`
         }
       })
       let index = this.npcs.push(npc) - 1
