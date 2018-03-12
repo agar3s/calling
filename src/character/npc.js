@@ -22,6 +22,20 @@ export default class NPC extends Character {
     let enemyProperties = ENEMY_LIST[config.key]
     let level = config.level || 1
 
+    switch(config.key){
+      case 'devil':
+        this.sword_attack = this.scene.sound.add('devil_attack')
+      break
+      case 'monk':
+        this.sword_attack = this.scene.sound.add('monk_attack')
+      break
+      case 'eye':
+        this.arrow_shot = this.scene.sound.add('eye_attack')
+      break
+    }
+     this.sword_attack.volume = 0.2
+    this.arrow_shot.volume = 0.2
+
     let weapon = enemyProperties.getWeapon(level)
 
     this.setMeleeWeapon(weapon)

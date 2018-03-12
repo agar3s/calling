@@ -20,6 +20,11 @@ const ORDER_DATA = {
 export default class Character {
   constructor (config) {
     let scene = config.scene
+    this.sword_attack = scene.sound.add('sword_attack')
+    this.arrow_shot = scene.sound.add('arrow_shot')
+    this.sword_attack.volume = 0.2
+    this.arrow_shot.volume = 0.2
+
     this.sprite = scene.add.sprite(0, 0, config.key)
     this.sprite.setOrigin(0.5, 0.5)
     this.xOffset = config.xOffset
@@ -298,6 +303,7 @@ export default class Character {
     if (damageModifier === 0) {
       this.scene.flashMessage('miss', this.sprite.x, this.sprite.y - WIDTH, 800)
     }
+    this.sword_attack.play()
     return {
       hit: damage*damageModifier,
       type: 'melee',
@@ -309,6 +315,7 @@ export default class Character {
     let damage = this.rangedWeapon.getDamage()
     let weaponSpeed = this.attrs.getProperty('speed')/this.meleeWeapon.weight
     let damageModifier = this.attrs.getStrengthModifier(1.5)
+    this.arrow_shot.play()
     return {
       hit: damage*damageModifier,
       speed: weaponSpeed,
