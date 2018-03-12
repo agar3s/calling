@@ -31,8 +31,7 @@ export default class NPC extends Character {
     if (this.mod === MODS.IDLE) {
       return this.assignOrder({code: ORDER_CODES.PASS})
     }
-    let possibleOrders = [ORDER_CODES.LEFT, ORDER_CODES.RIGHT, ORDER_CODES.JUMP, ORDER_CODES.JUMP_LEFT, ORDER_CODES.JUMP_RIGHT, ORDER_CODES.PASS, ORDER_CODES.PASS]
-    let order = possibleOrders[~~(possibleOrders.length*Math.random())]
+    let possibleOrders = []
 
     let iDistance = target.position.i - this.position.i
     let jDistance = target.position.j - this.position.j
@@ -48,25 +47,25 @@ export default class NPC extends Character {
     }
 
     if(iDistance*ld>range || jDistance*vd>range) {
-      return this.assignOrder({code: order})
-    }
-
-    if(ld===-1 && vd===-1) {
-      order = ORDER_CODES.JUMP_LEFT
+      possibleOrders = [ORDER_CODES.LEFT, ORDER_CODES.RIGHT, ORDER_CODES.JUMP, ORDER_CODES.JUMP_LEFT, ORDER_CODES.JUMP_RIGHT, ORDER_CODES.PASS, ORDER_CODES.PASS]
+    } else if(ld===-1 && vd===-1) {
+      possibleOrders = [ORDER_CODES.JUMP_LEFT, ORDER_CODES.JUMP_LEFT, ORDER_CODES.PASS]
     } else if(ld=== 0 && vd===-1) {
-      order = ORDER_CODES.JUMP
+      possibleOrders = [ORDER_CODES.JUMP, ORDER_CODES.JUMP, ORDER_CODES.PASS]
     } else if(ld=== 1 && vd===-1) {
-      order = ORDER_CODES.JUMP_RIGHT
+      possibleOrders = [ORDER_CODES.JUMP_RIGHT, ORDER_CODES.JUMP_RIGHT, ORDER_CODES.PASS]
     } else if(ld===-1 && vd===0) {
+      possibleOrders = [ORDER_CODES.LEFT, ORDER_CODES.JUMP_LEFT, ORDER_CODES.PASS]
     } else if(ld=== 1 && vd=== 0) {
-      order = ORDER_CODES.RIGHT
+      possibleOrders = [ORDER_CODES.RIGHT, ORDER_CODES.JUMP_RIGHT, ORDER_CODES.PASS]
     } else if(ld===-1 && vd===1) {
-      order = ORDER_CODES.LEFT
+      possibleOrders = [ORDER_CODES.LEFT, ORDER_CODES.LEFT, ORDER_CODES.PASS]
     } else if(ld=== 0 && vd=== 1) {
-      order = ORDER_CODES.DOWN
+      possibleOrders = [ORDER_CODES.DOWN, ORDER_CODES.DOWN, ORDER_CODES.PASS]
     } else if(ld=== 1 && vd=== 1) {
-      order = ORDER_CODES.RIGHT
+      possibleOrders = [ORDER_CODES.RIGHT, ORDER_CODES.RIGHT, ORDER_CODES.PASS]
     }
+    let order = possibleOrders[~~(possibleOrders.length*Math.random())]
     return this.assignOrder({code: order, i: target.position.i, j: target.position.j})
     
   }
@@ -74,10 +73,14 @@ export default class NPC extends Character {
   applyHit (attack) {
     super.applyHit(attack)
     if (this.mod === MODS.IDLE && this.attrs.getPropertyPercentage('hp') < 1) {
-      this.mod = MODS.GUARD 
-      this.animations.idle = this.animations.guard
-      this.sprite.anims.play(this.animations.guard)
+      return true
     }
+  }
+
+  getAngry() {
+    this.mod = MODS.GUARD
+    this.animations.idle = this.animations.guard
+    this.sprite.anims.play(this.animations.guard)
   }
 
 }

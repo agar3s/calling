@@ -178,7 +178,7 @@ class BootScene extends Phaser.Scene {
     this.player.updateToFuturePosition()
 
     let basicSword = new Weapon({dices:'2d4', weight: 4, damageMods: 1})
-    let basicBow = new Weapon({dices:'1d4', weight: 2, damageMods: 0})
+    let basicBow = new Weapon({dices:'1d6', weight: 2, damageMods: 1})
 
     this.player.setMeleeWeapon(basicSword)
     this.player.setRangedWeapon(basicBow)
@@ -498,7 +498,10 @@ class BootScene extends Phaser.Scene {
   applyAttack (target, attack) {
     let element = target.element
     if (target.type === 'character') {
-      element.applyHit(attack)
+      let changeMood = element.applyHit(attack)
+      if (changeMood) {
+        this.npcs.forEach(npc=>npc.getAngry())
+      }
       if (element.isDead()) {
         if(element === this.player) {
           this.cameras.main.fade(2000)

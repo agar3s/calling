@@ -162,8 +162,8 @@ export default class Character {
     let b = surrondings[center - 1][center + direction]
     let d = surrondings[center + 1][center + direction]
     let e = surrondings[center + 1][center]
-    a = a && a.rigid
-    b = b && b.rigid
+    a = a && a.traspasable
+    b = b && b.traspasable
     d = d && d.rigid
     e = e && e.rigid
 
@@ -173,11 +173,11 @@ export default class Character {
     let canJump = this.attrs.getProperty('high') > 0
     this.attrs.incrementProperty('high', -1)
 
-    if (!a && canJump) {
+    if (a && canJump) {
       this.applyJumpSpeed(transitionTime)
       this.futurePosition.j -= 1
       this.sprite.anims.play(this.animations.jump)
-      if (!b) {
+      if (b) {
         this.futurePosition.i += direction
         this.speed.x = direction*WIDTH*SCALE*steps/transitionTime
         this.lastDirection = direction
