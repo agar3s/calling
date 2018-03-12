@@ -20,15 +20,16 @@ export default class NPC extends Character {
     super(config)
 
     let enemyProperties = ENEMY_LIST[config.key]
-    
-    let weapon = enemyProperties.getWeapon(1)
+    let level = config.level || 1
+
+    let weapon = enemyProperties.getWeapon(level)
 
     this.setMeleeWeapon(weapon)
     this.setRangedWeapon(weapon)
 
-    this.attrs.addPropertyMod('hp', enemyProperties.getHp(1))
-    this.attrs.updateStrength(enemyProperties.getStrength(1))
-    this.attrs.updateDexterity(enemyProperties.getDexterity(1))
+    this.attrs.addPropertyMod('hp', enemyProperties.getHp(level))
+    this.attrs.updateStrength(enemyProperties.getStrength(level))
+    this.attrs.updateDexterity(enemyProperties.getDexterity(level))
     this.attrs.updateIntelligence(enemyProperties.getIntelligence(1))
 
     this.mod = MODS.IDLE
