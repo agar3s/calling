@@ -66,8 +66,8 @@ class BootScene extends Phaser.Scene {
     this.xOffset = xOffset
     this.yOffset = yOffset
 
-    let walls = this.add.tileSprite(10*32, 6*32, 25 * 32*1.2, 13 * 32, 'bg_walls')
-    walls.scrollFactorX = 1.2
+    let walls = this.add.tileSprite(10*32, 6*32, 35*32*2, 40 * 32, 'bg_walls')
+    walls.scrollFactorX = 0.5
 
     this.map = new Map({
       scene: this,
@@ -156,8 +156,8 @@ class BootScene extends Phaser.Scene {
 
     this.player = new Player({
       scene: this,
-      i: 1,
-      j: 3,
+      i: 16,
+      j: 13,
       key: 'player',
       xOffset: xOffset,
       yOffset: yOffset,
@@ -295,35 +295,8 @@ class BootScene extends Phaser.Scene {
     })
 
     this.npcs = []
-
-    let monsterType = ['devil', 'devil', 'monk', 'monk', 'eye'][~~(Math.random()*5)]
-
-    for (var i = 0; i<5; i++) {
-      let j = ~~(Math.random()*3) + 1
-      let i = ~~(Math.random()*13) + 1
-      let npc = new NPC({
-        scene: this,
-        key: monsterType,
-        xOffset: xOffset,
-        yOffset: yOffset,
-        i: i,
-        j: j,
-        animations: {
-          idle: `${monsterType}-idle`,
-          guard: `${monsterType}-guard`,
-          move: `${monsterType}-move`,
-          attack: `${monsterType}-attack`,
-          jump: `${monsterType}-jump`,
-          fall: `${monsterType}-fall`
-        }
-      })
-      let index = this.npcs.push(npc) - 1
-      this.map.updateCharacterLocation(npc)
-      npc.updateToFuturePosition()
-      npc.index = index
-    }
-
     this.projectiles = []
+    this.loadDungeon()
 
     // control
     this.control = new Control({
@@ -362,9 +335,46 @@ class BootScene extends Phaser.Scene {
     this.cameras.main.shake(100,0.003)
     */
 
-    let columns = this.add.tileSprite(12*32, 6.5*32, 25 * 32 * 2, 13 * 32, 'bg_columns')
+    let columns = this.add.tileSprite(35*32, 0, 35 * 32 * 2, 40 * 32, 'bg_columns')
     columns.setAlpha(0.5)
     columns.scrollFactorX = 2
+  }
+
+  resetPlayer () {
+    this.player.attrs.restoreProperty('hp')
+  }
+
+  loadDungeon () {
+    this.npcs = []
+    this.projectiles.forEach(projectile=>projectile.destroy())
+    this.projectiles = []
+
+    let monsterType = ['devil', 'devil', 'monk', 'monk', 'eye'][~~(Math.random()*5)]
+
+    for (var i = 0; i<5; i++) {
+      let j = ~~(Math.random()*3) + 1
+      let i = ~~(Math.random()*13) + 1
+      let npc = new NPC({
+        scene: this,
+        key: monsterType,
+        xOffset: this.xOffset,
+        yOffset: this.yOffset,
+        i: i,
+        j: j,
+        animations: {
+          idle: `${monsterType}-idle`,
+          guard: `${monsterType}-guard`,
+          move: `${monsterType}-move`,
+          attack: `${monsterType}-attack`,
+          jump: `${monsterType}-jump`,
+          fall: `${monsterType}-fall`
+        }
+      })
+      let index = this.npcs.push(npc) - 1
+      this.map.updateCharacterLocation(npc)
+      npc.updateToFuturePosition()
+      npc.index = index
+    }
   }
 
   update(time, dt) {
@@ -578,12 +588,25 @@ class BootScene extends Phaser.Scene {
       if (element.isDead()) {
         if (element === this.player) {
           this.cameras.main.fade(2000)
+          setTimeout(()=>{
+            this.cameras.main._fadeAlpha = 0
+            this.loadDungeon()
+            this.resetPlayer()
+          },2500)
         } else {
           this.cameras.main.flash(60, 0.9, 0.1, 0.1)
           this.cameras.main.shake(60, 0.003)
         }
         this.destroyCharacter(element)
         // check index before destroy... or update last indexes
+        if(this.npcs.length===0) {
+          this.cameras.main.fade(1000)
+          setTimeout(()=>{
+            this.cameras.main._fadeAlpha = 0
+            this.loadDungeon()
+          },1200)
+
+        }
       }
       return true
     }
