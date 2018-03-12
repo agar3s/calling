@@ -33,6 +33,7 @@ export default class Projectil {
     this.maxPosition = {i: config.max.i, j: config.max.j}
 
     this.damage = config.damage
+    this.launcher = config.launcher
 
     //DEBUG
 /*    this.location = config.scene.add.graphics(0, 0)
@@ -116,7 +117,7 @@ export default class Projectil {
 
   getAttackData () {
     return {
-      hit: 6,
+      hit: this.damage,
       type: 'ranged',
       speed: 5
     }

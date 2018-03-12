@@ -43,6 +43,7 @@ export default class Character {
     this.type = 'character'
     this.order = {}
     this.hpBar = config.scene.add.graphics(0, 0)
+    this.scene = scene
     this.hpBar.x = this.sprite.x - SCALE*WIDTH/2
     this.hpBar.y = this.sprite.y - SCALE*WIDTH/2 - 4*SCALE
     this.drawHp()
@@ -291,9 +292,8 @@ export default class Character {
     let weaponSpeed = this.attrs.getProperty('speed')/this.meleeWeapon.weight
     let damageModifier = this.attrs.getStrengthModifier(2)
     if (damageModifier === 0) {
-      console.log('miss')
+      this.scene.flashMessage('miss', this.sprite.x, this.sprite.y - WIDTH, 800)
     }
-    console.log('melee', 'damage:', damage, 'mod:', damageModifier, 'speed', weaponSpeed)
     return {
       hit: damage*damageModifier,
       type: 'melee',
@@ -305,7 +305,6 @@ export default class Character {
     let damage = this.rangedWeapon.getDamage()
     let weaponSpeed = this.attrs.getProperty('speed')/this.meleeWeapon.weight
     let damageModifier = this.attrs.getStrengthModifier(1.5)
-    console.log('ranged', 'damage:', damage, 'mod:', damageModifier, 'speed', weaponSpeed)
     return {
       hit: damage*damageModifier,
       speed: weaponSpeed,
@@ -378,7 +377,6 @@ export default class Character {
         this.down(timeFromTransition, cells)
         return {type: 'movement'}
       case ORDER_CODES.TALK:
-        console.log('pass')
         this.pass(timeFromTransition, cells)
         return {type: 'talk'}
       case ORDER_CODES.ATTACK_MELEE:
@@ -410,21 +408,21 @@ export default class Character {
     let dodged = this.attrs.save('dodge', attack.speed || 3)
 
     if (dodged===2) {
-      console.log('esquivado')
+      this.scene.flashMessage('miss', this.sprite.x, this.sprite.y - WIDTH, 800)
       return
     } else if (dodged === 1){
-      console.log('danio a la mitad')
-      attack.hit /= 2
+      
     } else if(dodged<0) {
-      console.log('mas danio', dodged)
       attack.hit *= -dodged
     }
 
     let defense = this.attrs.getProperty('defense')
-    let damage = attack.hit - defense
+    let damage = Math.round(attack.hit - defense)
     this.attrs.incrementProperty('hp', -damage)
     this.drawHp()
     if (damage > 0) {
+      // load text
+      this.scene.flashMessage(`${damage}`, this.sprite.x, this.sprite.y - WIDTH, 1200)
       this.sprite.tint = 0x990000
       setTimeout(() => {
         this.sprite.tint = undefined

@@ -45,6 +45,7 @@ class BootScene extends Phaser.Scene {
     this.load.spritesheet('ui', '../assets/ui.png', {frameWidth: 32, frameHeight: 32})
     this.load.spritesheet('arrow', '../assets/arrow.png', {frameWidth: 16, frameHeight: 16})
     this.load.spritesheet('player', '../assets/player_ss2.png', {frameWidth: 16, frameHeight: 16})
+    this.load.bitmapFont('kenney', '../assets/fonts/KenneyBlocks.png', '../assets/fonts/KenneyBlocks.xml')
   }
 
   create () {   
@@ -143,6 +144,7 @@ class BootScene extends Phaser.Scene {
       repeat: 1,
       frameRate: 4
     })
+
 
     this.player = new Player({
       scene: this,
@@ -370,7 +372,7 @@ class BootScene extends Phaser.Scene {
       let character = order.character
       let cells = this.map.getMapSurrondings(character.position.i, character.position.j, character.actionRange)
       let action = character.processOrder(cells, TIME_TO_ANIMATE)
-      
+
       character.enableTime(TIME_TO_ANIMATE, 1)
       if (action.type === 'attack') {
         if (action.melee) {
@@ -378,13 +380,13 @@ class BootScene extends Phaser.Scene {
           this.applyAttack(target, action.melee)
         }
         if (action.ranged) {
-          let {origin, target, speed, damage} = action.ranged
-          this.throwProjectile(origin, target, speed, damage)
+          let {origin, target, speed, hit} = action.ranged
+          this.throwProjectile(character, origin, target, speed, hit)
         }
       }
 
-        this.map.updateCharacterLocation(character)
-        character.updateToFuturePosition()
+      this.map.updateCharacterLocation(character)
+      character.updateToFuturePosition()
       if (action.type === 'movement') {
       }
     })
@@ -436,7 +438,6 @@ class BootScene extends Phaser.Scene {
       element.applyHit(attack)
       if (element.isDead()) {
         if(element === this.player) {
-          console.log('game over')
           this.cameras.main.fade(2000)
         }else {
           this.cameras.main.flash(60, 0.9, 0.1, 0.1)
@@ -457,7 +458,7 @@ class BootScene extends Phaser.Scene {
 
   destroyCharacter (element) {
     let index = element.index
-    this.map.removeElement(element)
+    this.map.removeElement(element.position.i, element.position.j, element)
     for (var i = this.npcs.length - 1; i >= 0; i--) {
       if(i === index) {
         this.npcs.splice(i, 1)
@@ -470,6 +471,9 @@ class BootScene extends Phaser.Scene {
 
   applyProjectileAttack (projectile, index) {
     let target = this.map.getElementInMap(projectile.position.i, projectile.position.j)
+    if(target.element === projectile.launcher) {
+      return
+    }
     let attack = projectile.getAttackData()
     let collide = this.applyAttack(target, attack)
     if (collide) {
@@ -477,10 +481,11 @@ class BootScene extends Phaser.Scene {
       this.projectiles.splice(index, 1)
     }
   }
-
-  throwProjectile (origin, target, speed, damage) {
+  
+  throwProjectile (launcher, origin, target, speed, damage) {
     this.projectiles.push(new Projectile({
       scene: this,
+      launcher: launcher,
       origin: origin,
       target: target,
       cellsByTurn: speed,
@@ -491,6 +496,15 @@ class BootScene extends Phaser.Scene {
         j: this.map.rows - 1
       }
     }))
+  }
+
+  flashMessage (text, x, y, time) {
+    let message = this.add.bitmapText(x, y, 'kenney', text, 11)
+    message.setOrigin(0.5)
+    message.setRotation(Math.PI)
+    setTimeout(()=>{
+      message.destroy()
+    }, time)
   }
 }
 

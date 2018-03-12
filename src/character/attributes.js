@@ -105,9 +105,7 @@ export default class Attributes {
     if (roll === 1){
       return 0
     }
-    console.log(roll, base)
     if((roll + base) >= 20) {
-      console.log('critic! X'+maxMod)
       return maxMod
     }
     return 1

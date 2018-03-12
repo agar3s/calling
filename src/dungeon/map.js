@@ -38,7 +38,6 @@ export default class Map {
         this.grid.strokeRect(i*TS - TS/2, j*TS - TS/2, TS, TS)
       }
     }
-    console.log(this)
   }
 
   getMapSurrondings (indexI, indexJ, range) {
@@ -66,18 +65,27 @@ export default class Map {
     this.tiles[j][i].setElement(element)
   }
 
+  removeElement (i, j, element) {
+    this.tiles[j][i].removeElement(element)
+  }
+
+  addElement (i, j, element) {
+    this.tiles[j][i].addElement(element)
+  }
+
   updateCharacterLocation (character) {
     if (!character.changedPosition()) return
     let current = character.position
     let future = character.futurePosition
-    this.setElement(current.i, current.j)
-    this.setElement(future.i, future.j, character)
+    this.removeElement(current.i, current.j, character)
+    this.addElement(future.i, future.j, character)
   }
-
+/*
   removeElement (element) {
     let current = element.position
     this.setElement(current.i, current.j)
   }
+  */
 }
 
 class Tile {
@@ -107,6 +115,7 @@ class Tile {
 
     this.properties = tileProperties[this.tile]
     this.element = undefined
+    this.elements = []
   }
 
   getElement () {
@@ -115,8 +124,38 @@ class Tile {
     return {type, element}
   }
 
+  getElement () {
+    if (this.elements.length === 0) {
+      return {
+        type: 'tile',
+        element: this.properties
+      }
+    }
+    let firstElement = this.elements[0]
+    return {
+      type: firstElement.type,
+      element: firstElement
+    }
+  }
+
   setElement (element) {
     this.element = element
+  }
+
+  addElement (element) {
+    let index = this.elements.indexOf(element)
+    if (index!=-1) {
+      return
+    }
+    this.elements.push(element)
+  }
+
+  removeElement (element) {
+    let index = this.elements.indexOf(element)
+    if (index === -1) {
+      return
+    }
+    this.elements.splice(index, 1)
   }
 
   
