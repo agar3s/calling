@@ -41,25 +41,34 @@ class BootScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.spritesheet('devil', '../assets/devil_ss.png', {frameWidth: 16, frameHeight: 16})
-    this.load.spritesheet('monk', '../assets/monk_ss.png', {frameWidth: 16, frameHeight: 16})
-    this.load.spritesheet('eye', '../assets/eye_ss.png', {frameWidth: 16, frameHeight: 16})
-    this.load.spritesheet('platforms', '../assets/platforms.png', {frameWidth: 16, frameHeight: 16})
-    this.load.spritesheet('ui', '../assets/ui.png', {frameWidth: 32, frameHeight: 32})
-    this.load.spritesheet('arrow', '../assets/arrow.png', {frameWidth: 16, frameHeight: 16})
-    this.load.spritesheet('player', '../assets/player_ss2.png', {frameWidth: 16, frameHeight: 16})
+    // load the background for the rooms
+    this.load.image('bg_walls', '../assets/bg_walls.png')
+    this.load.image('bg_columns', '../assets/bg_columns.png')
+
+    this.load.spritesheet('devil', '../assets/devil_ss.png', { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('monk', '../assets/monk_ss.png', { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('eye', '../assets/eye_ss.png', { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('platforms', '../assets/platforms.png', { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('ui_actions', '../assets/ui_ss_32x32.png', { frameWidth: 32, frameHeight: 32 })
+    this.load.spritesheet('ui_info', '../assets/ui_ss_16x16.png', { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('arrow', '../assets/arrow.png', { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('laser', '../assets/laser.png', { frameWidth: 16, frameHeight: 16 })
+    this.load.spritesheet('player', '../assets/player_ss2.png', { frameWidth: 16, frameHeight: 16 })
     this.load.bitmapFont('kenney', '../assets/fonts/KenneyBlocks.png', '../assets/fonts/KenneyBlocks.xml')
   }
 
-  create () {   
+  create() {
     let SCALE = 2
     let WIDTH = 16
-    let TS = SCALE*WIDTH // TileSize
+    let TS = SCALE * WIDTH // TileSize
     let xOffset = 16
     let yOffset = 16
     this.xOffset = xOffset
     this.yOffset = yOffset
-    
+
+    this.add.tileSprite(0, 0, 20 * 32, 12 * 32, 'bg_walls');
+    this.add.tileSprite(0, 0, 20 * 32, 12 * 32, 'bg_columns');
+
     this.map = new Map({
       scene: this,
       scale: SCALE,
@@ -67,23 +76,23 @@ class BootScene extends Phaser.Scene {
       xOffset: xOffset,
       yOffset: yOffset
     })
-    
+
     this.anims.create({
       key: 'player-jump',
-      frames: [{key: 'player', frame: 8, duration:2}, {key: 'player', frame: 9}],
+      frames: [{ key: 'player', frame: 8, duration: 2 }, { key: 'player', frame: 9 }],
       repeat: 0,
       frameRate: 4
     })
     this.anims.create({
       key: 'player-fall',
-      frames: [{key: 'player', frame: 14, duration:2}, {key: 'player', frame: 15}],
+      frames: [{ key: 'player', frame: 14, duration: 2 }, { key: 'player', frame: 15 }],
       repeat: 0,
       frameRate: 4
     })
 
     this.anims.create({
       key: 'player-move',
-      frames: [{key: 'player', frame: 2, duration:0}, {key: 'player', frame: 3}],
+      frames: [{ key: 'player', frame: 2, duration: 0 }, { key: 'player', frame: 3 }],
       repeat: 0,
       frameRate: 4
     })
@@ -91,9 +100,9 @@ class BootScene extends Phaser.Scene {
     this.anims.create({
       key: 'player-melee',
       frames: [
-        {key: 'player', frame: 4},
-        {key: 'player', frame: 5, duration: 50},
-        {key: 'player', frame: 4}
+        { key: 'player', frame: 4 },
+        { key: 'player', frame: 5, duration: 50 },
+        { key: 'player', frame: 4 }
       ],
       repeat: 0,
       frameRate: 8
@@ -102,9 +111,9 @@ class BootScene extends Phaser.Scene {
     this.anims.create({
       key: 'player-melee-air',
       frames: [
-        {key: 'player', frame: 10},
-        {key: 'player', frame: 11, duration:50},
-        {key: 'player', frame: 10}
+        { key: 'player', frame: 10 },
+        { key: 'player', frame: 11, duration: 50 },
+        { key: 'player', frame: 10 }
       ],
       repeat: 0,
       frameRate: 8
@@ -113,9 +122,9 @@ class BootScene extends Phaser.Scene {
     this.anims.create({
       key: 'player-ranged',
       frames: [
-        {key: 'player', frame: 6},
-        {key: 'player', frame: 7, duration:50},
-        {key: 'player', frame: 6},
+        { key: 'player', frame: 6 },
+        { key: 'player', frame: 7, duration: 50 },
+        { key: 'player', frame: 6 },
       ],
       repeat: 0,
       frameRate: 8
@@ -124,9 +133,9 @@ class BootScene extends Phaser.Scene {
     this.anims.create({
       key: 'player-ranged-air',
       frames: [
-        {key: 'player', frame: 12},
-        {key: 'player', frame: 13, duration:50},
-        {key: 'player', frame: 12},
+        { key: 'player', frame: 12 },
+        { key: 'player', frame: 13, duration: 50 },
+        { key: 'player', frame: 12 },
       ],
       repeat: 0,
       frameRate: 8
@@ -135,8 +144,8 @@ class BootScene extends Phaser.Scene {
     this.anims.create({
       key: 'player-idle',
       frames: [
-        {key: 'player', frame: 0, duration:2},
-        {key: 'player', frame: 1}
+        { key: 'player', frame: 0, duration: 2 },
+        { key: 'player', frame: 1 }
       ],
       repeat: 1,
       frameRate: 4
@@ -153,7 +162,7 @@ class BootScene extends Phaser.Scene {
       animations: {
         idle: 'player-idle',
         jump: 'player-jump',
-        fall:'player-fall',
+        fall: 'player-fall',
         move: 'player-move',
         melee: 'player-melee',
         ranged: 'player-ranged',
@@ -166,8 +175,8 @@ class BootScene extends Phaser.Scene {
         intelligence: 3
       }
     })
-    this.player.addSkill(new DoubleJump({character: this.player}))
-    this.player.addSkill(new Dash({character: this.player}))
+    this.player.addSkill(new DoubleJump({ character: this.player }))
+    this.player.addSkill(new Dash({ character: this.player }))
     this.map.updateCharacterLocation(this.player)
     this.player.updateToFuturePosition()
 
@@ -180,42 +189,42 @@ class BootScene extends Phaser.Scene {
 
     this.anims.create({
       key: 'devil-idle',
-      frames: [{key: 'devil', frame: 0}, {key: 'devil', frame: 1}],
+      frames: [{ key: 'devil', frame: 0 }, { key: 'devil', frame: 1 }],
       repeat: 1,
       frameRate: 4
     })
 
     this.anims.create({
       key: 'devil-move',
-      frames: [{key: 'devil', frame: 2}, {key: 'devil', frame: 3}],
+      frames: [{ key: 'devil', frame: 2 }, { key: 'devil', frame: 3 }],
       repeat: 0,
       frameRate: 4
     })
 
     this.anims.create({
       key: 'devil-guard',
-      frames: [{key: 'devil', frame: 4}, {key: 'devil', frame: 5}],
+      frames: [{ key: 'devil', frame: 4 }, { key: 'devil', frame: 5 }],
       repeat: 1,
       frameRate: 4
     })
 
     this.anims.create({
       key: 'devil-attack',
-      frames: [{key: 'devil', frame: 6}, {key: 'devil', frame: 7}, {key: 'devil', frame: 6}],
+      frames: [{ key: 'devil', frame: 6 }, { key: 'devil', frame: 7 }, { key: 'devil', frame: 6 }],
       repeat: 0,
       frameRate: 4
     })
 
     this.anims.create({
       key: 'devil-jump',
-      frames: [{key: 'devil', frame: 8}, {key: 'devil', frame: 9}, {key: 'devil', frame: 8}],
+      frames: [{ key: 'devil', frame: 8 }, { key: 'devil', frame: 9 }, { key: 'devil', frame: 8 }],
       repeat: 0,
       frameRate: 4
     })
 
     this.anims.create({
       key: 'devil-fall',
-      frames: [{key: 'devil', frame: 10}, {key: 'devil', frame: 11}, {key: 'devil', frame: 10}],
+      frames: [{ key: 'devil', frame: 10 }, { key: 'devil', frame: 11 }, { key: 'devil', frame: 10 }],
       repeat: 0,
       frameRate: 4
     })
@@ -343,7 +352,7 @@ class BootScene extends Phaser.Scene {
     //temp
     this.cameras.main.scrollX = 0
     this.cameras.main.scrollY = 0
-    this.cameras.main.setBounds(0, 0, this.map.cols*32, this.map.rows*32)
+    this.cameras.main.setBounds(0, 0, this.map.cols * 32, this.map.rows * 32)
     this.cameras.main.startFollow(this.player.sprite)
     /*
     effects for camera
@@ -352,7 +361,7 @@ class BootScene extends Phaser.Scene {
     */
   }
 
-  update (time, dt) {
+  update(time, dt) {
     this.turnTransition -= dt
 
     if (this.status === STATUS.WAITING) {
@@ -413,7 +422,7 @@ class BootScene extends Phaser.Scene {
         }
       } else if (this.control.isMeleeAttack()) {
         if (this.cursor.isMeleeMode()) {
-          if (this.cursor.position.i === this.player.position.i && this.cursor.position.j === this.player.position.j){
+          if (this.cursor.position.i === this.player.position.i && this.cursor.position.j === this.player.position.j) {
             this.cursor.hide()
             this.delayTransition(STATUS.WAITING, 200)
             actionTaken = false
@@ -426,7 +435,7 @@ class BootScene extends Phaser.Scene {
         }
       } else if (this.control.isRangedAttack()) {
         if (this.cursor.isRangedMode()) {
-          if (this.cursor.position.i === this.player.position.i && this.cursor.position.j === this.player.position.j){
+          if (this.cursor.position.i === this.player.position.i && this.cursor.position.j === this.player.position.j) {
             this.cursor.hide()
             this.delayTransition(STATUS.WAITING, 200)
             actionTaken = false
@@ -458,7 +467,7 @@ class BootScene extends Phaser.Scene {
   }
 
   // declare action in this turn
-  setOrder (orderCode) {
+  setOrder(orderCode) {
     this.order = {
       code: orderCode,
       i: this.cursor.position.i,
@@ -466,22 +475,22 @@ class BootScene extends Phaser.Scene {
     }
     this.status = STATUS.PROCESSING
     setTimeout(() => {
-      this.processTurn()  
+      this.processTurn()
     }, 1)
   }
 
-  showCursor (range, type) {
+  showCursor(range, type) {
     this.delayTransition(STATUS.TARGETING, 150)
     this.cursor.setAnchor(this.player.position.i, this.player.position.j, range, type)
   }
 
-  delayTransition (newStatus, delayTime) {
+  delayTransition(newStatus, delayTime) {
     this.status = STATUS.DELAY
     this.turnTransition = delayTime
     this.nextStatus = newStatus
   }
 
-  processTurn () {
+  processTurn() {
     let orders = this.npcs.map(npc => npc.getOrder(this.map, this.player))
     orders.push(this.player.assignOrder(this.order))
 
@@ -501,7 +510,7 @@ class BootScene extends Phaser.Scene {
           this.applyAttack(target, action.melee)
         }
         if (action.ranged) {
-          let {origin, target, speed, hit} = action.ranged
+          let { origin, target, speed, hit } = action.ranged
           this.throwProjectile(character, origin, target, speed, hit)
         }
       }
@@ -518,7 +527,7 @@ class BootScene extends Phaser.Scene {
     this.status = STATUS.TRANSITION
   }
 
-  endTurn (dt) {
+  endTurn(dt) {
     this.player.update()
     this.player.disableTime()
     this.order = {}
@@ -538,7 +547,7 @@ class BootScene extends Phaser.Scene {
     })
   }
 
-  updateTurn (dt) {
+  updateTurn(dt) {
     // check collisions...?
     this.player.update(dt)
     this.npcs.forEach(npc => {
@@ -553,7 +562,7 @@ class BootScene extends Phaser.Scene {
     })
   }
 
-  applyAttack (target, attack) {
+  applyAttack(target, attack) {
     let element = target.element
     if (target.type === 'character') {
       let changeMood = element.applyHit(attack)
@@ -561,9 +570,9 @@ class BootScene extends Phaser.Scene {
         this.npcs.forEach(npc=>npc.getAngry())
       }
       if (element.isDead()) {
-        if(element === this.player) {
+        if (element === this.player) {
           this.cameras.main.fade(2000)
-        }else {
+        } else {
           this.cameras.main.flash(60, 0.9, 0.1, 0.1)
           this.cameras.main.shake(60, 0.003)
         }
@@ -573,29 +582,29 @@ class BootScene extends Phaser.Scene {
       return true
     }
 
-    if(target.type === 'tile') {
-      if(!target.element.traspasable){
+    if (target.type === 'tile') {
+      if (!target.element.traspasable) {
         return true
       }
     }
   }
 
-  destroyCharacter (element) {
+  destroyCharacter(element) {
     let index = element.index
     this.map.removeElement(element.position.i, element.position.j, element)
     for (var i = this.npcs.length - 1; i >= 0; i--) {
-      if(i === index) {
+      if (i === index) {
         this.npcs.splice(i, 1)
         break
-      } 
+      }
       this.npcs[i].index--
     }
     element.destroy()
   }
 
-  applyProjectileAttack (projectile, index) {
+  applyProjectileAttack(projectile, index) {
     let target = this.map.getElementInMap(projectile.position.i, projectile.position.j)
-    if(target.element === projectile.launcher) {
+    if (target.element === projectile.launcher) {
       return
     }
     let attack = projectile.getAttackData()
@@ -605,8 +614,8 @@ class BootScene extends Phaser.Scene {
       this.projectiles.splice(index, 1)
     }
   }
-  
-  throwProjectile (launcher, origin, target, speed, damage) {
+
+  throwProjectile(launcher, origin, target, speed, damage) {
     this.projectiles.push(new Projectile({
       scene: this,
       launcher: launcher,
@@ -624,11 +633,11 @@ class BootScene extends Phaser.Scene {
     }))
   }
 
-  flashMessage (text, x, y, time) {
-    let message = this.add.bitmapText(x, y-5, 'kenney', text, 11)
+  flashMessage(text, x, y, time) {
+    let message = this.add.bitmapText(x, y - 5, 'kenney', text, 11)
     message.setOrigin(0.5)
     message.setRotation(Math.PI)
-    setTimeout(()=>{
+    setTimeout(() => {
       message.destroy()
     }, time)
   }
