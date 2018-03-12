@@ -76,7 +76,7 @@ class BootScene extends Phaser.Scene {
       xOffset: xOffset,
       yOffset: yOffset
     })
-
+    this.dungeonLevel = 0
     console.log(this.map.rows, this.map.cols)
 
     this.anims.create({
@@ -350,17 +350,18 @@ class BootScene extends Phaser.Scene {
     this.projectiles = []
 
     let monsterType = ['devil', 'devil', 'monk', 'monk', 'eye'][~~(Math.random()*5)]
-
-    for (var i = 0; i<5; i++) {
-      let j = ~~(Math.random()*3) + 1
-      let i = ~~(Math.random()*13) + 1
+    this.dungeonLevel++
+    
+    for (var i = 0; i<(this.dungeonLevel+5); i++) {
+      let pos = this.map.getNextAvailableSpot()
       let npc = new NPC({
         scene: this,
         key: monsterType,
         xOffset: this.xOffset,
         yOffset: this.yOffset,
-        i: i,
-        j: j,
+        level: this.dungeonLevel,
+        i: pos.i,
+        j: pos.j,
         animations: {
           idle: `${monsterType}-idle`,
           guard: `${monsterType}-guard`,

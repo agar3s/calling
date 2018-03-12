@@ -38,6 +38,8 @@ export default class Map {
         this.grid.strokeRect(i*TS, j*TS, TS, TS)
       }
     }
+
+    this.regenerateSpots()
   }
 
   getMapSurrondings (indexI, indexJ, range) {
@@ -80,12 +82,31 @@ export default class Map {
     this.removeElement(current.i, current.j, character)
     this.addElement(future.i, future.j, character)
   }
-/*
-  removeElement (element) {
-    let current = element.position
-    this.setElement(current.i, current.j)
+
+  getNextAvailableSpot () {
+    let index = ~~(Math.random()*this.availableSpots.length)
+    let value = this.availableSpots[index]
+    this.availableSpots.splice(index, 1)
+    return {i:value[0], j:value[1]}
   }
-  */
+
+  regenerateSpots () {
+    this.availableSpots = [
+      [16, 13],
+      [17, 13],
+      [16, 10],
+      [17, 10],
+      [5, 12],
+      [29,12],
+      [5,9],
+      [29,9],
+      [2,7],
+      [33,7],
+      [17,2],
+      [6,4],
+      [29,4]
+    ]
+  }
 }
 
 class Tile {
