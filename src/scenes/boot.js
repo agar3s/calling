@@ -342,10 +342,31 @@ class BootScene extends Phaser.Scene {
   }
 
   resetPlayer () {
+    let spot = this.map.getNextAvailableSpot()
+    this.player.futurePosition.i = spot.i
+    this.player.futurePosition.j = spot.j
+    this.player.position.j = spot.j
+    this.player.position.j = spot.j
+    this.player.lastDirection = 0
+    this.player.attrs.setProperty('high', 0)
+    this.player.attrs.updateStrength(2)
+    this.player.attrs.updateDexterity(2)
+    this.player.attrs.updateIntelligence(2)
+    this.player.fixPositionToGrid()
     this.player.attrs.restoreProperty('hp')
+
+  }
+
+  upgradePlayer () {
+    let spot = this.map.getNextAvailableSpot()
+    this.player.position.i = spot.i
+    this.player.position.j = spot.j
+    this.player.fixPositionToGrid()
   }
 
   loadDungeon () {
+    this.map.regenerateSpots()
+    this.npcs.forEach(npc=>npc.destroy())
     this.npcs = []
     this.projectiles.forEach(projectile=>projectile.destroy())
     this.projectiles = []
@@ -592,19 +613,20 @@ class BootScene extends Phaser.Scene {
           this.cameras.main.fade(2000)
           setTimeout(()=>{
             this.cameras.main._fadeAlpha = 0
-            this.loadDungeon()
             this.resetPlayer()
+            this.loadDungeon()
           },2500)
         } else {
           this.cameras.main.flash(60, 0.9, 0.1, 0.1)
           this.cameras.main.shake(60, 0.003)
+          this.destroyCharacter(element)
         }
-        this.destroyCharacter(element)
         // check index before destroy... or update last indexes
         if(this.npcs.length===0) {
           this.cameras.main.fade(1000)
           setTimeout(()=>{
             this.cameras.main._fadeAlpha = 0
+            this.upgradePlayer()
             this.loadDungeon()
           },1200)
 
