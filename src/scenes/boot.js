@@ -40,7 +40,7 @@ class BootScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.spritesheet('characters', '../assets/devil_ss.png', {frameWidth: 16, frameHeight: 16})
+    this.load.spritesheet('devil', '../assets/devil_ss.png', {frameWidth: 16, frameHeight: 16})
     this.load.spritesheet('platforms', '../assets/platforms.png', {frameWidth: 16, frameHeight: 16})
     this.load.spritesheet('ui', '../assets/ui.png', {frameWidth: 32, frameHeight: 32})
     this.load.spritesheet('arrow', '../assets/arrow.png', {frameWidth: 16, frameHeight: 16})
@@ -68,7 +68,7 @@ class BootScene extends Phaser.Scene {
 
     this.anims.create({
       key: 'flying-blue',
-      frames: [{key: 'characters', frame: 0}, {key: 'characters', frame: 1}],
+      frames: [{key: 'devil', frame: 0}, {key: 'devil', frame: 1}],
       repeat: -1,
       frameRate: 4
     })
@@ -152,6 +152,7 @@ class BootScene extends Phaser.Scene {
       scene: this,
       i: 1,
       j: 3,
+      key: 'player',
       xOffset: xOffset,
       yOffset: yOffset,
       animations: {
@@ -179,6 +180,48 @@ class BootScene extends Phaser.Scene {
     this.player.setMeleeWeapon(basicSword)
     this.player.setRangedWeapon(basicBow)
 
+
+    this.anims.create({
+      key: 'devil-idle',
+      frames: [{key: 'devil', frame: 0}, {key: 'devil', frame: 1}],
+      repeat: 1,
+      frameRate: 4
+    })
+
+    this.anims.create({
+      key: 'devil-move',
+      frames: [{key: 'devil', frame: 2}, {key: 'devil', frame: 3}],
+      repeat: 1,
+      frameRate: 4
+    })
+
+    this.anims.create({
+      key: 'devil-guard',
+      frames: [{key: 'devil', frame: 4}, {key: 'devil', frame: 5}],
+      repeat: 1,
+      frameRate: 4
+    })
+
+    this.anims.create({
+      key: 'devil-attack',
+      frames: [{key: 'devil', frame: 6}, {key: 'devil', frame: 7}],
+      repeat: 1,
+      frameRate: 4
+    })
+
+    this.anims.create({
+      key: 'devil-jump',
+      frames: [{key: 'devil', frame: 8}, {key: 'devil', frame: 9}],
+      repeat: 1,
+      frameRate: 4
+    })
+
+    this.anims.create({
+      key: 'devil-fall',
+      frames: [{key: 'devil', frame: 10}, {key: 'devil', frame: 11}],
+      repeat: 1,
+      frameRate: 4
+    })
     this.npcs = []
 
     for (var i = 0; i< 10; i++) {
@@ -186,11 +229,19 @@ class BootScene extends Phaser.Scene {
       let i = ~~(Math.random()*13) + 1
       let npc = new Character({
         scene: this,
+        key: 'player',
         xOffset: xOffset,
         yOffset: yOffset,
         i: i,
         j: j,
-        animations: {idle: 'flying-blue'}
+        animations: {
+          idle: 'devil-idle',
+          guard: 'devil-guard',
+          move: 'devil-move',
+          attack: 'devil-attack',
+          jump: 'devil-jump',
+          fall: 'devil-fall'
+        }
       })
       let index = this.npcs.push(npc) - 1
       this.map.updateCharacterLocation(npc)
