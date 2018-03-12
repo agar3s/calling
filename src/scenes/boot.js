@@ -154,10 +154,11 @@ class BootScene extends Phaser.Scene {
     })
 
 
+    let spot = this.map.getNextAvailableSpot()
     this.player = new Player({
       scene: this,
-      i: 16,
-      j: 13,
+      i: spot.i,
+      j: spot.j,
       key: 'player',
       xOffset: xOffset,
       yOffset: yOffset,
@@ -351,7 +352,7 @@ class BootScene extends Phaser.Scene {
 
     let monsterType = ['devil', 'devil', 'monk', 'monk', 'eye'][~~(Math.random()*5)]
     this.dungeonLevel++
-    
+
     for (var i = 0; i<(this.dungeonLevel+5); i++) {
       let pos = this.map.getNextAvailableSpot()
       let npc = new NPC({
