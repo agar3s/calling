@@ -19,7 +19,7 @@ export default class Attributes {
     this.updateStrength(config.strength || 1)
 
     // derivated from intelligence
-    this.sightRange = Attributes.initProperty(6)
+    this.sightRange = Attributes.initProperty(4)
 
     // depending on item
     this.meleeRange = Attributes.initProperty(1)
@@ -37,6 +37,11 @@ export default class Attributes {
     this.strength = st
     this.setPropertyMaxValue('hp', st*3 + 10)
     this.setPropertyMaxValue('defense', st*(0.4) + 1)
+  }
+
+  updateIntelligence (int) {
+    this.intelligence = int
+    this.setPropertyMaxValue('sightRange', int + 4)
   }
 
   setProperty (property, value) {
@@ -75,7 +80,7 @@ export default class Attributes {
 
   getPropertyPercentage (property) {
     let prop = this[property]
-    return this.getProperty(property) / prop.maxValue
+    return this.getProperty(property) / (prop.maxValue + prop.mods)
   }
 
   // 1d20 pifia

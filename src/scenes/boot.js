@@ -1,5 +1,5 @@
 import Player from '../character/player'
-import Character from '../character/character'
+import NPC from '../character/npc'
 import Control from '../util/control'
 import Cursor from '../util/cursor'
 import Map from '../dungeon/map'
@@ -18,7 +18,8 @@ const ORDER_CODES = {
   JUMP_LEFT: 6,
   ATTACK_MELEE: 7,
   ATTACK_RANGED: 8,
-  TALK: 9
+  TALK: 9,
+  PASS: 10
 }
 
 
@@ -166,7 +167,9 @@ class BootScene extends Phaser.Scene {
         ranged2: 'player-ranged-air'
       },
       attrs: {
-        dexterity: 5
+        dexterity: 2,
+        strength: 2,
+        intelligence: 2
       }
     })
     this.player.addSkill(new DoubleJump({character: this.player}))
@@ -174,7 +177,7 @@ class BootScene extends Phaser.Scene {
     this.map.updateCharacterLocation(this.player)
     this.player.updateToFuturePosition()
 
-    let basicSword = new Weapon({dices:'3d4', weight: 4, damageMods: 1})
+    let basicSword = new Weapon({dices:'2d4', weight: 4, damageMods: 1})
     let basicBow = new Weapon({dices:'1d4', weight: 2, damageMods: 0})
 
     this.player.setMeleeWeapon(basicSword)
@@ -191,7 +194,7 @@ class BootScene extends Phaser.Scene {
     this.anims.create({
       key: 'devil-move',
       frames: [{key: 'devil', frame: 2}, {key: 'devil', frame: 3}],
-      repeat: 1,
+      repeat: 0,
       frameRate: 4
     })
 
@@ -204,32 +207,32 @@ class BootScene extends Phaser.Scene {
 
     this.anims.create({
       key: 'devil-attack',
-      frames: [{key: 'devil', frame: 6}, {key: 'devil', frame: 7}],
-      repeat: 1,
+      frames: [{key: 'devil', frame: 6}, {key: 'devil', frame: 7}, {key: 'devil', frame: 6}],
+      repeat: 0,
       frameRate: 4
     })
 
     this.anims.create({
       key: 'devil-jump',
-      frames: [{key: 'devil', frame: 8}, {key: 'devil', frame: 9}],
-      repeat: 1,
+      frames: [{key: 'devil', frame: 8}, {key: 'devil', frame: 9}, {key: 'devil', frame: 8}],
+      repeat: 0,
       frameRate: 4
     })
 
     this.anims.create({
       key: 'devil-fall',
-      frames: [{key: 'devil', frame: 10}, {key: 'devil', frame: 11}],
-      repeat: 1,
+      frames: [{key: 'devil', frame: 10}, {key: 'devil', frame: 11}, {key: 'devil', frame: 10}],
+      repeat: 0,
       frameRate: 4
     })
     this.npcs = []
 
-    for (var i = 0; i< 10; i++) {
+    for (var i = 0; i<5; i++) {
       let j = ~~(Math.random()*3) + 1
       let i = ~~(Math.random()*13) + 1
-      let npc = new Character({
+      let npc = new NPC({
         scene: this,
-        key: 'player',
+        key: 'devil',
         xOffset: xOffset,
         yOffset: yOffset,
         i: i,
@@ -420,12 +423,9 @@ class BootScene extends Phaser.Scene {
   }
 
   processTurn () {
-    let possibleOrders = [ORDER_CODES.DOWN, ORDER_CODES.LEFT, ORDER_CODES.RIGHT, ORDER_CODES.JUMP, ORDER_CODES.JUMP_LEFT, ORDER_CODES.JUMP_RIGHT]
-    let orders = this.npcs.map(npc => {
-      let randomOrder = possibleOrders[~~(Math.random()*possibleOrders.length)]
-      return npc.assignOrder({code: randomOrder, i: this.player.position.i, j:this.player.position.j})
-    })
+    let orders = this.npcs.map(npc => npc.getOrder(this.map, this.player))
     orders.push(this.player.assignOrder(this.order))
+    console.log(orders)
 
     orders.sort((a, b) => {
       return b.priority - a.priority

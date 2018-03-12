@@ -13,7 +13,8 @@ const ORDER_DATA = {
   6: {type: 'movement', speed: 1.5},
   7: {type: 'attack', speed: 1},
   8: {type: 'attack', speed: 1.2},
-  9: {type: 'talk', speed: 3}
+  9: {type: 'talk', speed: 3},
+  10: {type: 'pass', speed: 0.5}
 }
 
 export default class Character {
@@ -54,6 +55,7 @@ export default class Character {
     this.rangedWeapon = undefined
 
     this.lastDirection = 0
+    this.attrs.setProperty('high', 0)
   }
 
   update (dt) {
@@ -346,6 +348,7 @@ export default class Character {
   assignOrder (order) {
     this.order = order
     let orderData = ORDER_DATA[order.code]
+    console.log(this.attrs)
     this.order.priority = this.attrs.getProperty('speed')*orderData.speed
     this.order.character = this
     return this.order
@@ -389,6 +392,7 @@ export default class Character {
         if (melee.type === 'melee') {
           this.attack(timeFromTransition)
           let animation = e?this.animations.melee:this.animations.melee2
+          if(!animation) animation = this.animations.attack
           this.sprite.anims.play(animation)
         }
         return {type: 'attack', melee}
@@ -400,9 +404,13 @@ export default class Character {
         if (ranged.type === 'ranged') {
           this.attack(timeFromTransition)
           let animation = e?this.animations.ranged:this.animations.ranged2
+          if(!animation) animation = this.animations.attack
           this.sprite.anims.play(animation)
         }
         return {type: 'attack', ranged}
+      case ORDER_CODES.PASS:
+        this.pass(timeFromTransition, cells)
+        return {type: 'pass'}
     }
   }
 
