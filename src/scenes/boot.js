@@ -55,6 +55,13 @@ class BootScene extends Phaser.Scene {
     this.load.spritesheet('laser', '../assets/laser.png', { frameWidth: 16, frameHeight: 16 })
     this.load.spritesheet('player', '../assets/player_ss2.png', { frameWidth: 16, frameHeight: 16 })
     this.load.bitmapFont('kenney', '../assets/fonts/KenneyBlocks.png', '../assets/fonts/KenneyBlocks.xml')
+
+    // load sfx
+    this.load.audio('arrow_shot', '../assets/arrow_shot.ogg');
+    this.load.audio('sword_attack', '../assets/sword_attack.ogg');
+    this.load.audio('devil_attack', '../assets/devil_attack.ogg');
+    this.load.audio('monk_attack', '../assets/monk_attack.ogg');
+    this.load.audio('eye_attack', '../assets/eye_attack.ogg');
   }
 
   create() {
@@ -183,8 +190,8 @@ class BootScene extends Phaser.Scene {
     this.map.updateCharacterLocation(this.player)
     this.player.updateToFuturePosition()
 
-    let basicSword = new Weapon({dices:'2d4', weight: 4, damageMods: 1})
-    let basicBow = new Weapon({dices:'1d6', weight: 2, damageMods: 1})
+    let basicSword = new Weapon({ dices: '2d4', weight: 4, damageMods: 1 })
+    let basicBow = new Weapon({ dices: '1d6', weight: 2, damageMods: 1 })
 
     this.player.setMeleeWeapon(basicSword)
     this.player.setRangedWeapon(basicBow)
@@ -234,68 +241,94 @@ class BootScene extends Phaser.Scene {
 
     this.anims.create({
       key: 'monk-idle',
-      frames: [{key: 'monk', frame: 0}, {key: 'monk', frame: 1}],
+      frames: [{ key: 'monk', frame: 0 }, { key: 'monk', frame: 1 }],
       repeat: 1,
       frameRate: 4
     })
 
     this.anims.create({
       key: 'monk-move',
-      frames: [{key: 'monk', frame: 2}, {key: 'monk', frame: 3}],
+      frames: [{ key: 'monk', frame: 2 }, { key: 'monk', frame: 3 }],
       repeat: 0,
       frameRate: 4
     })
 
     this.anims.create({
       key: 'monk-guard',
-      frames: [{key: 'monk', frame: 4}, {key: 'monk', frame: 5}],
+      frames: [{ key: 'monk', frame: 4 }, { key: 'monk', frame: 5 }],
       repeat: 1,
       frameRate: 4
     })
 
     this.anims.create({
       key: 'monk-attack',
-      frames: [{key: 'monk', frame: 6}, {key: 'monk', frame: 7}, {key: 'monk', frame: 6}],
+      frames: [{ key: 'monk', frame: 6 }, { key: 'monk', frame: 7 }, { key: 'monk', frame: 6 }],
       repeat: 0,
       frameRate: 4
     })
 
     this.anims.create({
       key: 'monk-jump',
-      frames: [{key: 'monk', frame: 8}, {key: 'monk', frame: 9}, {key: 'monk', frame: 8}],
+      frames: [{ key: 'monk', frame: 8 }, { key: 'monk', frame: 9 }, { key: 'monk', frame: 8 }],
       repeat: 0,
       frameRate: 4
     })
 
     this.anims.create({
       key: 'monk-fall',
-      frames: [{key: 'monk', frame: 10}, {key: 'monk', frame: 11}, {key: 'monk', frame: 10}],
+      frames: [{ key: 'monk', frame: 10 }, { key: 'monk', frame: 11 }, { key: 'monk', frame: 10 }],
       repeat: 0,
       frameRate: 4
     })
 
     this.anims.create({
       key: 'eye-idle',
-      frames: [{key: 'eye', frame: 0}, {key: 'eye', frame: 1}],
+      frames: [{ key: 'eye', frame: 0 }, { key: 'eye', frame: 1 }],
       repeat: 1,
       frameRate: 4
     })
 
     this.anims.create({
       key: 'eye-guard',
-      frames: [{key: 'eye', frame: 2}, {key: 'eye', frame: 3}],
+      frames: [{ key: 'eye', frame: 2 }, { key: 'eye', frame: 3 }],
       repeat: 1,
       frameRate: 4
     })
 
     this.anims.create({
       key: 'eye-attack',
-      frames: [{key: 'eye', frame: 4}, {key: 'eye', frame: 5}, {key: 'eye', frame: 4}],
+      frames: [{ key: 'eye', frame: 4 }, { key: 'eye', frame: 5 }, { key: 'eye', frame: 4 }],
       repeat: 0,
       frameRate: 4
     })
 
     this.npcs = []
+    let monsterType = ['devil', 'devil', 'monk', 'monk', 'eye'][~~(Math.random() * 5)]
+
+    for (var i = 0; i < 5; i++) {
+      let j = ~~(Math.random() * 3) + 1
+      let i = ~~(Math.random() * 13) + 1
+      let npc = new NPC({
+        scene: this,
+        key: monsterType,
+        xOffset: xOffset,
+        yOffset: yOffset,
+        i: i,
+        j: j,
+        animations: {
+          idle: `${monsterType}-idle`,
+          guard: `${monsterType}-guard`,
+          move: `${monsterType}-move`,
+          attack: `${monsterType}-attack`,
+          jump: `${monsterType}-jump`,
+          fall: `${monsterType}-fall`
+        }
+      })
+      let index = this.npcs.push(npc) - 1
+      this.map.updateCharacterLocation(npc)
+      npc.updateToFuturePosition()
+      npc.index = index
+    }
     this.projectiles = []
     this.loadDungeon()
 
@@ -337,6 +370,7 @@ class BootScene extends Phaser.Scene {
     */
 
     let columns = this.add.tileSprite(35*32, 0, 35 * 32 * 2, 40 * 32, 'bg_columns')
+
     columns.setAlpha(0.5)
     columns.scrollFactorX = 2
   }
@@ -606,7 +640,7 @@ class BootScene extends Phaser.Scene {
     if (target.type === 'character') {
       let changeMood = element.applyHit(attack)
       if (changeMood) {
-        this.npcs.forEach(npc=>npc.getAngry())
+        this.npcs.forEach(npc => npc.getAngry())
       }
       if (element.isDead()) {
         if (element === this.player) {
