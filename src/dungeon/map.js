@@ -29,7 +29,6 @@ export default class Map {
   loadMap () {
     let level = this.getDungeon()
     this.availableSpots = JSON.parse(JSON.stringify(level.spots))
-    console.log(level)
     this.tiles = level.tiles.split('\n').map(row => row.split(',').map(tile => parseInt(tile)))
 
     this.xOffset = this.tiles[0].length
@@ -120,7 +119,6 @@ export default class Map {
       for (var i = 0; i < this.cols; i++) {
         this.tiles[j][i].elements = []
         this.tiles[j][i].destroy()
-        console.log('aaa')
       }
     }
   }

@@ -341,14 +341,12 @@ class BootScene extends Phaser.Scene {
     this.player.updateToFuturePosition()
     this.player.fixPositionToGrid()
     this.player.update(1)
+    this.player.reset()
     this.dungeonLevel = 0
 
-    console.log('new position', this.player.attrs.getProperty('hp'))
-    console.log('new percentage', this.player.attrs.getPropertyPercentage('hp'))
-    console.log('raw data', this.player.attrs.hp)
   }
 
-  upgradePlayer() {
+  upgradePlayer(stat) {
     let spot = this.map.getNextAvailableSpot()
     this.player.position.i = 0
     this.player.position.j = 0
@@ -358,12 +356,11 @@ class BootScene extends Phaser.Scene {
     this.player.updateToFuturePosition()
     this.player.fixPositionToGrid()
     this.player.update(1)
-    console.log(this.player)
-    console.log('new position', this.player.position, spot)
+    let statIncreased = this.player.upgradeStatOrWeapon(stat)
+    this.flashMessage(`${statIncreased} improved`, 10*32, 9*32, 1000, 16).scrollFactorX = 0
   }
 
   loadDungeon() {
-    console.log(this)
     
     this.map.emptyElements()
     this.npcs.forEach(npc => npc.destroy())
@@ -378,8 +375,8 @@ class BootScene extends Phaser.Scene {
 
     //for (var i = 0; i < (this.dungeonLevel + 5); i++) {
     let minions = this.dungeonLevel
-    if(minions > this.map.availableSpots - 1){
-      minions = this.map.availableSpots -1
+    if(minions > this.map.availableSpots.length - 1){
+      minions = this.map.availableSpots.length - 1
     }
     if(minions > 8){
       minions = 8
@@ -415,7 +412,6 @@ class BootScene extends Phaser.Scene {
   }
 
   loadMap () {
-    console.log('load map on 468')
     this.loadDungeon()
 
     let rows = this.map.rows
@@ -440,7 +436,6 @@ class BootScene extends Phaser.Scene {
     this.cameras.main.scrollY = 0
     this.cameras.main.setBounds(0, 0, cols * 32, rows * 32)
     this.cameras.main.startFollow(this.player.sprite)
-    console.log(this.cameras.main)
   }
 
   update(time, dt) {
@@ -673,13 +668,14 @@ class BootScene extends Phaser.Scene {
       }
       if (element.isDead()) {
         if (element === this.player) {
-          this.cameras.main.fade(2000)
+          this.cameras.main.fade(1000)
+          this.flashMessage('you are dead', 10*32, 6*32, 2000, 20).scrollFactorX=0
           setTimeout(() => {
             this.cameras.main._fadeAlpha = 0
             this.dungeonLevel = 0
             this.loadMap()
             this.resetPlayer()
-          }, 2500)
+          }, 3500)
         } else {
           this.cameras.main.flash(60, 0.9, 0.1, 0.1)
           this.cameras.main.shake(60, 0.003)
@@ -687,13 +683,7 @@ class BootScene extends Phaser.Scene {
         }
         // check index before destroy... or update last indexes
         if (this.npcs.length === 0) {
-          this.cameras.main.fade(1000)
-          setTimeout(() => {
-            this.cameras.main._fadeAlpha = 0
-            this.loadMap()
-            this.upgradePlayer()
-          }, 1200)
-
+          this.endLevel()
         }
       }
       return true
@@ -704,6 +694,22 @@ class BootScene extends Phaser.Scene {
         return true
       }
     }
+  }
+
+  /**
+  stat could be one of: 'st', 'int', 'dx', 'melee' or 'ranged'
+  if none choose one randomly
+  */
+  endLevel (stat) {
+    this.flashMessage(`level ${this.dungeonLevel+1} cleared`, 10*32, 6*32, 2000, 20).scrollFactorX = 0
+    setTimeout(() => {
+      this.cameras.main.fade(1500)
+    }, 500)
+    setTimeout(() => {
+      this.cameras.main._fadeAlpha = 0
+      this.loadMap()
+      this.upgradePlayer(stat)
+    }, 2200)
   }
 
   destroyCharacter(element) {
@@ -750,13 +756,14 @@ class BootScene extends Phaser.Scene {
     }))
   }
 
-  flashMessage(text, x, y, time) {
-    let message = this.add.bitmapText(x, y - 5, 'kenney', text, 11)
+  flashMessage(text, x, y, time, size=11) {
+    let message = this.add.bitmapText(x, y - 5, 'kenney', text, size)
     message.setOrigin(0.5)
     message.setRotation(Math.PI)
     setTimeout(() => {
       message.destroy()
     }, time)
+    return message
   }
 
   // resets the action icons when the player changes the current one

@@ -225,6 +225,7 @@ export default class Character {
     let c = surrondings[center][center + this.lastDirection]
     let d = surrondings[center + 1][center + this.lastDirection]
     let e = surrondings[center + 1][center]
+    a = a && a.traspasable
     b = b && b.traspasable
     e = e && e.rigid
     c = c && c.rigid
@@ -243,6 +244,9 @@ export default class Character {
         this.applyJumpSpeed(transitionTime)
         this.futurePosition.j -= 1
         this.attrs.incrementProperty('high', -1)
+      } else {
+        this.futurePosition.j += 1
+        this.fall(transitionTime)
       }
     } else if (!e) {
       // if there is space in front and there is a previous direction
@@ -443,7 +447,7 @@ export default class Character {
     this.drawHp()
     if (damage > 0) {
       // load text
-      this.scene.flashMessage(`${damage}`, this.sprite.x, this.sprite.y - WIDTH, 1200)
+      this.scene.flashMessage(`-${damage}`, this.sprite.x, this.sprite.y - WIDTH, 1200)
       this.sprite.tint = 0x990000
       setTimeout(() => {
         this.sprite.tint = undefined

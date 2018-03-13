@@ -19,11 +19,11 @@ export default class Attributes {
     this.updateStrength(config.strength || 1)
 
     // derivated from intelligence
-    this.sightRange = Attributes.initProperty(4)
+    this.sightRange = Attributes.initProperty(2)
 
     // depending on item
     this.meleeRange = Attributes.initProperty(1)
-    this.rangedRange = Attributes.initProperty(4)
+    this.rangedRange = Attributes.initProperty(2)
   }
 
   updateDexterity (dx) {
