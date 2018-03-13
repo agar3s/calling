@@ -410,7 +410,7 @@ class BootScene extends Phaser.Scene {
     this.player.attrs.updateDexterity(2)
     this.player.attrs.updateIntelligence(2)
     this.player.attrs.restoreProperty('hp')
-    this.drawHp()
+    this.player.drawHp()
     this.map.updateCharacterLocation(this.player)
     this.player.updateToFuturePosition()
     this.player.fixPositionToGrid()
