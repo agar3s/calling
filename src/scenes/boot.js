@@ -394,7 +394,14 @@ class BootScene extends Phaser.Scene {
     this.dungeonLevel++
 
     //for (var i = 0; i < (this.dungeonLevel + 5); i++) {
-    for (var i = 0; i < 1; i++) {
+    let minions = this.dungeonLevel
+    if(minions > this.map.availableSpots - 1){
+      minions = this.map.availableSpots -1
+    }
+    if(minions > 8){
+      minions = 8
+    }
+    for (var i = 0; i < minions; i++) {
       let pos = this.map.getNextAvailableSpot()
       let npc = new NPC({
         scene: this,
@@ -688,6 +695,7 @@ class BootScene extends Phaser.Scene {
           this.cameras.main.fade(2000)
           setTimeout(() => {
             this.cameras.main._fadeAlpha = 0
+            this.dungeonLevel = 0
             this.loadMap()
             this.resetPlayer()
           }, 2500)

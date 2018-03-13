@@ -124,13 +124,13 @@ const ENEMY_LIST = {
       return level + 10
     },
     getStrength: (level) => {
-      return level + 1
+      return level*0.9 + 1
     },
     getDexterity: (level) => {
-      return ~~(level / 2 + 1)
+      return ~~(level*0.5 + 1)
     },
     getIntelligence: (level) => {
-      return ~~(level / 3 + 1)
+      return ~~(level*0.3 + 1)
     }
   },
   'monk': {
@@ -139,16 +139,16 @@ const ENEMY_LIST = {
       return new Weapon({ dices: '1d4,1d6', weight: 2 + level, damageMods: level })
     },
     getHp: (level) => {
-      return ~~(level * 1.5) + 5
+      return ~~(level * 0.9) + 5
     },
     getStrength: (level) => {
-      return ~~(level * 1.5) + 1
+      return ~~(level * 1.1) + 1
     },
     getDexterity: (level) => {
-      return level + 1
+      return level*0.8 + 1
     },
     getIntelligence: (level) => {
-      return ~~(level / 2 + 1)
+      return ~~(level*0.5 + 1)
     }
   },
   'eye': {
@@ -157,16 +157,16 @@ const ENEMY_LIST = {
       return new Weapon({ dices: '1d4', weight: 3, damageMods: level })
     },
     getHp: (level) => {
-      return level * 2 + 4
+      return level * 1.2 + 4
     },
     getStrength: (level) => {
       return ~~(level * 0.5) + 1
     },
     getDexterity: (level) => {
-      return level + 1
+      return level*1.2 + 1
     },
     getIntelligence: (level) => {
-      return level * 2
+      return level * 1.2
     }
   }
 }
