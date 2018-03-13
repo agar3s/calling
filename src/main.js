@@ -8,6 +8,7 @@ let config = {
   height: 12*32,
   scaleMode: 1,
   pixelArt: true,
+  canvas: document.getElementById('game'),
   backgroundColor: 0x111111,
   scene: [
     BootScene
@@ -15,3 +16,6 @@ let config = {
 }
 
 let game = new Phaser.Game(config)
+
+document.getElementById('game').focus()
+window.focus()
