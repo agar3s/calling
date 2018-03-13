@@ -274,6 +274,7 @@ class BootScene extends Phaser.Scene {
     })
     this.player.addSkill(new DoubleJump({ character: this.player }))
     this.player.addSkill(new Dash({ character: this.player }))
+    this.player.attrs.addPropertyMod('hp', 30)
     this.player.updateToFuturePosition()
     
     let basicSword = new Weapon({ dices: '2d4', weight: 4, damageMods: 1 })
