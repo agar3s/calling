@@ -69,23 +69,6 @@ class BootScene extends Phaser.Scene {
     let SCALE = 2
     let WIDTH = 16
     let TS = SCALE * WIDTH // TileSize
-    let xOffset = 16
-    let yOffset = 16
-    this.xOffset = xOffset
-    this.yOffset = yOffset
-
-    let walls = this.add.tileSprite(10 * 32, 6 * 32, 35 * 32 * 2, 40 * 32, 'bg_walls')
-    walls.scrollFactorX = 0.5
-
-    this.map = new Map({
-      scene: this,
-      scale: SCALE,
-      width: WIDTH,
-      xOffset: xOffset,
-      yOffset: yOffset
-    })
-    this.dungeonLevel = 0
-    console.log(this.map.rows, this.map.cols)
 
     this.anims.create({
       key: 'player-jump',
@@ -160,43 +143,6 @@ class BootScene extends Phaser.Scene {
       repeat: 1,
       frameRate: 4
     })
-
-
-    let spot = this.map.getNextAvailableSpot()
-    this.player = new Player({
-      scene: this,
-      i: spot.i,
-      j: spot.j,
-      key: 'player',
-      xOffset: xOffset,
-      yOffset: yOffset,
-      animations: {
-        idle: 'player-idle',
-        jump: 'player-jump',
-        fall: 'player-fall',
-        move: 'player-move',
-        melee: 'player-melee',
-        ranged: 'player-ranged',
-        melee2: 'player-melee-air',
-        ranged2: 'player-ranged-air'
-      },
-      attrs: {
-        dexterity: 2,
-        strength: 3,
-        intelligence: 3
-      }
-    })
-    this.player.addSkill(new DoubleJump({ character: this.player }))
-    this.player.addSkill(new Dash({ character: this.player }))
-    this.map.updateCharacterLocation(this.player)
-    this.player.updateToFuturePosition()
-
-    let basicSword = new Weapon({ dices: '2d4', weight: 4, damageMods: 1 })
-    let basicBow = new Weapon({ dices: '1d6', weight: 2, damageMods: 1 })
-
-    this.player.setMeleeWeapon(basicSword)
-    this.player.setRangedWeapon(basicBow)
-
 
     this.anims.create({
       key: 'devil-idle',
@@ -303,77 +249,74 @@ class BootScene extends Phaser.Scene {
       frameRate: 4
     })
 
-    this.npcs = []
-    let monsterType = ['devil', 'devil', 'monk', 'monk', 'eye'][~~(Math.random() * 5)]
+    this.player = new Player({
+      scene: this,
+      i: 0,
+      j: 0,
+      key: 'player',
+      xOffset: 0,
+      yOffset: 0,
+      animations: {
+        idle: 'player-idle',
+        jump: 'player-jump',
+        fall: 'player-fall',
+        move: 'player-move',
+        melee: 'player-melee',
+        ranged: 'player-ranged',
+        melee2: 'player-melee-air',
+        ranged2: 'player-ranged-air'
+      },
+      attrs: {
+        dexterity: 2,
+        strength: 3,
+        intelligence: 3
+      }
+    })
+    this.player.addSkill(new DoubleJump({ character: this.player }))
+    this.player.addSkill(new Dash({ character: this.player }))
+    this.player.updateToFuturePosition()
+    
+    let basicSword = new Weapon({ dices: '2d4', weight: 4, damageMods: 1 })
+    let basicBow = new Weapon({ dices: '1d6', weight: 2, damageMods: 1 })
 
-    for (var i = 0; i < 5; i++) {
-      let j = ~~(Math.random() * 3) + 1
-      let i = ~~(Math.random() * 13) + 1
-      let npc = new NPC({
-        scene: this,
-        key: monsterType,
-        xOffset: xOffset,
-        yOffset: yOffset,
-        i: i,
-        j: j,
-        animations: {
-          idle: `${monsterType}-idle`,
-          guard: `${monsterType}-guard`,
-          move: `${monsterType}-move`,
-          attack: `${monsterType}-attack`,
-          jump: `${monsterType}-jump`,
-          fall: `${monsterType}-fall`
-        }
-      })
-      let index = this.npcs.push(npc) - 1
-      this.map.updateCharacterLocation(npc)
-      npc.updateToFuturePosition()
-      npc.index = index
-    }
+    this.player.setMeleeWeapon(basicSword)
+    this.player.setRangedWeapon(basicBow)
+
+    this.npcs = []
     this.projectiles = []
-    this.loadDungeon()
+
+    // target cursor
+    this.cursor = new Cursor({
+      scene: this,
+      xOffset: 0,
+      yOffset: 0
+    })
+
+    this.map = new Map({
+      scene: this,
+      scale: SCALE,
+      width: WIDTH
+    })
+    
+    this.dungeonLevel = 0
+    this.loadMap()
+    this.resetPlayer()
 
     // control
     this.control = new Control({
       scene: this
     })
 
-    // target cursor
-    this.cursor = new Cursor({
-      scene: this,
-      xOffset: xOffset,
-      yOffset: yOffset
-    })
 
     // experimental turn based order
     this.status = STATUS.WAITING
     this.turnTransition = 0
     this.order = {}
-
-    var controlConfig = {
-      camera: this.cameras.main,
-      acceleration: 0.06,
-      drag: 0.0005,
-      maxSpeed: 1.0
-    }
-
-    this.cameraControl = new Phaser.Cameras.Controls.Smoothed(controlConfig)
-
-    //temp
-    this.cameras.main.scrollX = 0
-    this.cameras.main.scrollY = 0
-    this.cameras.main.setBounds(0, 0, this.map.cols * 32, this.map.rows * 32)
-    this.cameras.main.startFollow(this.player.sprite)
     /*
     effects for camera
     this.cameras.main.flash(100, 0.9, 0.1, 0.1)
     this.cameras.main.shake(100,0.003)
     */
-
-    let columns = this.add.tileSprite(35 * 32, 0, 35 * 32 * 2, 40 * 32, 'bg_columns')
-
-    columns.setAlpha(0.5)
-    columns.scrollFactorX = 2
 
     // add the UI elements
     this.bowIcon = this.add.sprite(TS, TS, 'ui_actions')
@@ -415,6 +358,7 @@ class BootScene extends Phaser.Scene {
     this.player.updateToFuturePosition()
     this.player.fixPositionToGrid()
     this.player.update(1)
+    this.dungeonLevel = 0
 
     console.log('new position', this.player.attrs.getProperty('hp'))
     console.log('new percentage', this.player.attrs.getPropertyPercentage('hp'))
@@ -423,6 +367,8 @@ class BootScene extends Phaser.Scene {
 
   upgradePlayer() {
     let spot = this.map.getNextAvailableSpot()
+    this.player.position.i = 0
+    this.player.position.j = 0
     this.player.futurePosition.i = spot.i
     this.player.futurePosition.j = spot.j
     this.map.updateCharacterLocation(this.player)
@@ -434,12 +380,15 @@ class BootScene extends Phaser.Scene {
   }
 
   loadDungeon() {
+    console.log(this)
+    
     this.map.emptyElements()
-    this.map.regenerateSpots()
     this.npcs.forEach(npc => npc.destroy())
     this.npcs = []
     this.projectiles.forEach(projectile => projectile.destroy())
     this.projectiles = []
+
+    this.map.loadMap()
 
     let monsterType = ['devil', 'devil', 'monk', 'monk', 'eye'][~~(Math.random() * 5)]
     this.dungeonLevel++
@@ -450,8 +399,8 @@ class BootScene extends Phaser.Scene {
       let npc = new NPC({
         scene: this,
         key: monsterType,
-        xOffset: this.xOffset,
-        yOffset: this.yOffset,
+        xOffset: this.map.xOffset,
+        yOffset: this.map.yOffset,
         level: this.dungeonLevel,
         i: pos.i,
         j: pos.j,
@@ -469,6 +418,39 @@ class BootScene extends Phaser.Scene {
       npc.updateToFuturePosition()
       npc.index = index
     }
+    this.player.xOffset = this.map.xOffset
+    this.player.yOffset = this.map.yOffset
+    this.cursor.xOffset = this.map.xOffset
+    this.cursor.yOffset = this.map.yOffset
+  }
+
+  loadMap () {
+    console.log('load map on 468')
+    this.loadDungeon()
+
+    let rows = this.map.rows
+    let cols = this.map.cols
+
+    if(this.walls) this.walls.destroy()
+    this.walls = this.add.tileSprite(this.map.xOffset - 16, this.map.yOffset-16, cols * 32, rows * 32, 'bg_walls')
+    this.walls.setOrigin(0, 0)
+    this.walls.scrollFactorX = 0.5
+    this.walls.setDepth(-2)
+
+    if(this.columns) this.columns.destroy()
+    let parallaxWidth = cols>20?(cols * 32 * 2):(cols*32)
+    this.columns = this.add.tileSprite(this.map.xOffset - 16, this.map.yOffset - 16, parallaxWidth, rows * 32, 'bg_columns')
+    this.columns.setOrigin(0, 0)
+    this.columns.setAlpha(0.5)
+    this.columns.scrollFactorX = 2
+    this.columns.setDepth(2)
+
+    //temp
+    this.cameras.main.scrollX = 0
+    this.cameras.main.scrollY = 0
+    this.cameras.main.setBounds(0, 0, cols * 32, rows * 32)
+    this.cameras.main.startFollow(this.player.sprite)
+    console.log(this.cameras.main)
   }
 
   update(time, dt) {
@@ -706,7 +688,7 @@ class BootScene extends Phaser.Scene {
           this.cameras.main.fade(2000)
           setTimeout(() => {
             this.cameras.main._fadeAlpha = 0
-            this.loadDungeon()
+            this.loadMap()
             this.resetPlayer()
           }, 2500)
         } else {
@@ -719,7 +701,7 @@ class BootScene extends Phaser.Scene {
           this.cameras.main.fade(1000)
           setTimeout(() => {
             this.cameras.main._fadeAlpha = 0
-            this.loadDungeon()
+            this.loadMap()
             this.upgradePlayer()
           }, 1200)
 
@@ -770,8 +752,8 @@ class BootScene extends Phaser.Scene {
       cellsByTurn: speed,
       timeToTransition: TIME_TO_ANIMATE,
       damage: damage,
-      xOffset: this.xOffset,
-      yOffset: this.yOffset,
+      xOffset: this.map.xOffset,
+      yOffset: this.map.yOffset,
       max: {
         i: this.map.cols - 1,
         j: this.map.rows - 1

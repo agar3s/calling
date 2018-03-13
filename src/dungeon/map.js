@@ -1,35 +1,15 @@
+import dungeons from './dungeons/index'
 
 export default class Map {
   constructor (params) {
-    let scene = params.scene
-    let scale = params.scale
-    let width = params.width
-    let xOffset = params.xOffset
-    let yOffset = params.yOffset
-    let TS = scale * width //tileSize
+    this.scene = params.scene
+    this.scale = params.scale
+    this.width = params.width
+    let TS = this.scale * this.width //tileSize
     this.rows = 0
     this.cols = 0
 
-    this.tiles = basicMap.split('\n').map(row => row.split(',').map(tile => parseInt(tile)))
-    for (var j = 0; j < this.tiles.length; j++) {
-      let row = this.tiles[j]
-      for (var i = 0; i < row.length; i++) {
-        row[i] = new Tile({
-          scene: params.scene,
-          tile: row[i],
-          i: i,
-          j: j,
-          xOffset: xOffset,
-          yOffset: yOffset,
-          width: width,
-          scale: scale
-        })
-      }
-    }
-    this.rows = this.tiles.length
-    this.cols = this.tiles[0].length
-
-    this.grid = scene.add.graphics(0,0)
+    this.grid = this.scene.add.graphics(0,0)
     this.grid.lineStyle(1, 0x220022, 0.01)
     this.grid.fillStyle(0x220022, 0.01)
     for (var j = 0; j < 50; j++) {
@@ -39,6 +19,51 @@ export default class Map {
       }
     }
 
+  }
+
+  getDungeon () {
+    let options = dungeons.level1
+    return options[~~(Math.random()*options.length)]
+  }
+
+  loadMap () {
+    let level = this.getDungeon()
+    this.availableSpots = JSON.parse(JSON.stringify(level.spots))
+    console.log(level)
+    this.tiles = level.tiles.split('\n').map(row => row.split(',').map(tile => parseInt(tile)))
+
+    this.xOffset = this.tiles[0].length
+    this.yOffset = this.tiles.length
+    if (this.xOffset < 20) {
+      this.xOffset = (20 - this.xOffset)*16 + 16
+    } else {
+      this.xOffset = 16
+    }
+
+    if (this.yOffset < 12) {
+      this.yOffset = (12 - this.yOffset)*16 + 16
+    } else {
+      this.yOffset = 16
+    }
+    
+
+    for (var j = 0; j < this.tiles.length; j++) {
+      let row = this.tiles[j]
+      for (var i = 0; i < row.length; i++) {
+        row[i] = new Tile({
+          scene: this.scene,
+          tile: row[i],
+          i: i,
+          j: j,
+          xOffset: this.xOffset,
+          yOffset: this.yOffset,
+          width: this.width,
+          scale: this.scale
+        })
+      }
+    }
+    this.rows = this.tiles.length
+    this.cols = this.tiles[0].length
     this.regenerateSpots()
   }
 
@@ -94,27 +119,13 @@ export default class Map {
     for (var j = 0; j < this.rows; j++) {
       for (var i = 0; i < this.cols; i++) {
         this.tiles[j][i].elements = []
+        this.tiles[j][i].destroy()
+        console.log('aaa')
       }
     }
   }
 
   regenerateSpots () {
-    this.availableSpots = [
-      [16, 13],
-      [17, 13],
-      [16, 10],
-      [17, 10],
-      [5, 12],
-      [29,12],
-      [5,9],
-      [29,9],
-      [2,7],
-      [33,7],
-      [17,2],
-      [6,4],
-      [29,4],
-      [33,4]
-    ]
   }
 }
 
@@ -133,14 +144,15 @@ class Tile {
 
     let invert = (this.tile < 0)?-1:1
     if(this.tile !== 3) {
-      params.scene.add.tileSprite(
+      this.sprite = params.scene.add.tileSprite(
         this.x,
         this.y,
         this.width,
         this.width,
         'platforms',
         this.tile * invert
-      ).setScale(invert * this.scale, this.scale)
+      ).setScale(invert * this.scale, this.scale
+      ).setDepth(-1)
     }
 
     this.properties = tileProperties[this.tile]
@@ -188,6 +200,9 @@ class Tile {
     this.elements.splice(index, 1)
   }
 
+  destroy () {
+    if(this.sprite) this.sprite.destroy()
+  }
   
 }
 
@@ -232,3 +247,13 @@ let basicMap =
 0,1,3,3,3,3,3,3,3,3,3,3,3,0,0,0,0,0,0,0,0,3,3,3,3,3,3,3,3,3,3,3,3,1,0
 0,1,3,3,3,3,3,3,3,3,3,3,0,0,0,0,0,0,0,0,0,0,3,3,3,3,3,3,3,3,3,3,3,1,0
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0`
+
+let basicMap2 = 
+`0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+0,3,3,3,3,3,3,3,3,3,3,3,3,3,0
+0,3,3,3,3,3,3,3,3,3,3,3,3,3,0
+0,3,3,3,3,3,3,3,3,3,3,3,3,3,0
+0,3,3,3,3,3,3,3,3,3,3,3,3,3,0
+0,0,0,0,0,1,1,3,1,1,0,0,0,0,0
+0,0,0,0,0,0,3,3,3,0,0,0,0,0,0
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0`

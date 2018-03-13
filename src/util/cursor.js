@@ -33,7 +33,7 @@ export default class Cursor {
     let j = this.position.j
     this.square.clear()
     this.square.lineStyle(1, COLORS[this.mode], 1)
-    this.square.strokeRect(i*SCALE*WIDTH + 1, j*SCALE*WIDTH + 1, SCALE*WIDTH - 2, SCALE*WIDTH - 2)
+    this.square.strokeRect((i-0.5)*SCALE*WIDTH + 1+this.xOffset, (j-0.5)*SCALE*WIDTH + 1+this.yOffset, SCALE*WIDTH - 2, SCALE*WIDTH - 2)
   }
 
   setRange (range) {
