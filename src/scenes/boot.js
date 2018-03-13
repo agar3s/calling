@@ -188,6 +188,13 @@ class BootScene extends Phaser.Scene {
     })
 
     this.anims.create({
+      key: 'devil-talk',
+      frames: [{ key: 'devil', frame: 12 }, { key: 'devil', frame: 13 }],
+      repeat: 0,
+      frameRate: 4
+    })
+
+    this.anims.create({
       key: 'monk-idle',
       frames: [{ key: 'monk', frame: 0 }, { key: 'monk', frame: 1 }],
       repeat: 1,
@@ -230,6 +237,13 @@ class BootScene extends Phaser.Scene {
     })
 
     this.anims.create({
+      key: 'monk-talk',
+      frames: [{ key: 'monk', frame: 12 }, { key: 'monk', frame: 13 }],
+      repeat: 0,
+      frameRate: 4
+    })
+
+    this.anims.create({
       key: 'eye-idle',
       frames: [{ key: 'eye', frame: 0 }, { key: 'eye', frame: 1 }],
       repeat: 1,
@@ -246,6 +260,13 @@ class BootScene extends Phaser.Scene {
     this.anims.create({
       key: 'eye-attack',
       frames: [{ key: 'eye', frame: 4 }, { key: 'eye', frame: 5 }, { key: 'eye', frame: 4 }],
+      repeat: 0,
+      frameRate: 4
+    })
+
+    this.anims.create({
+      key: 'eye-talk',
+      frames: [{ key: 'eye', frame: 6 }, { key: 'eye', frame: 7 }],
       repeat: 0,
       frameRate: 4
     })
@@ -277,7 +298,7 @@ class BootScene extends Phaser.Scene {
     this.player.addSkill(new Dash({ character: this.player }))
     this.player.attrs.addPropertyMod('hp', 30)
     this.player.updateToFuturePosition()
-    
+
     let basicSword = new Weapon({ dices: '2d4', weight: 4, damageMods: 1 })
     let basicBow = new Weapon({ dices: '1d6', weight: 2, damageMods: 1 })
 
@@ -299,7 +320,7 @@ class BootScene extends Phaser.Scene {
       scale: SCALE,
       width: WIDTH
     })
-    
+
     this.dungeonLevel = 0
     this.loadMap()
     this.resetPlayer()
@@ -364,7 +385,7 @@ class BootScene extends Phaser.Scene {
 
   loadDungeon() {
     console.log(this)
-    
+
     this.map.emptyElements()
     this.npcs.forEach(npc => npc.destroy())
     this.npcs = []
@@ -378,10 +399,10 @@ class BootScene extends Phaser.Scene {
 
     //for (var i = 0; i < (this.dungeonLevel + 5); i++) {
     let minions = this.dungeonLevel
-    if(minions > this.map.availableSpots - 1){
-      minions = this.map.availableSpots -1
+    if (minions > this.map.availableSpots - 1) {
+      minions = this.map.availableSpots - 1
     }
-    if(minions > 8){
+    if (minions > 8) {
       minions = 8
     }
     for (var i = 0; i < minions; i++) {
@@ -400,7 +421,8 @@ class BootScene extends Phaser.Scene {
           move: `${monsterType}-move`,
           attack: `${monsterType}-attack`,
           jump: `${monsterType}-jump`,
-          fall: `${monsterType}-fall`
+          fall: `${monsterType}-fall`,
+          talk: `${monsterType}-talk`
         }
       })
       let index = this.npcs.push(npc) - 1
@@ -414,21 +436,21 @@ class BootScene extends Phaser.Scene {
     this.cursor.yOffset = this.map.yOffset
   }
 
-  loadMap () {
+  loadMap() {
     console.log('load map on 468')
     this.loadDungeon()
 
     let rows = this.map.rows
     let cols = this.map.cols
 
-    if(this.walls) this.walls.destroy()
-    this.walls = this.add.tileSprite(this.map.xOffset - 16, this.map.yOffset-16, cols * 32, rows * 32, 'bg_walls')
+    if (this.walls) this.walls.destroy()
+    this.walls = this.add.tileSprite(this.map.xOffset - 16, this.map.yOffset - 16, cols * 32, rows * 32, 'bg_walls')
     this.walls.setOrigin(0, 0)
     this.walls.scrollFactorX = 0.5
     this.walls.setDepth(-2)
 
-    if(this.columns) this.columns.destroy()
-    let parallaxWidth = cols>20?(cols * 32 * 2):(cols*32)
+    if (this.columns) this.columns.destroy()
+    let parallaxWidth = cols > 20 ? (cols * 32 * 2) : (cols * 32)
     this.columns = this.add.tileSprite(this.map.xOffset - 16, this.map.yOffset - 16, parallaxWidth, rows * 32, 'bg_columns')
     this.columns.setOrigin(0, 0)
     this.columns.setAlpha(0.5)
@@ -552,6 +574,9 @@ class BootScene extends Phaser.Scene {
 
   // declare action in this turn
   setOrder(orderCode) {
+    this.npcs.forEach(npc => npc.makeShutup())
+    this.hideTalkPanel()
+
     this.order = {
       code: orderCode,
       i: this.cursor.position.i,
@@ -611,6 +636,15 @@ class BootScene extends Phaser.Scene {
         if (action.ranged) {
           let { origin, target, speed, hit } = action.ranged
           this.throwProjectile(character, origin, target, speed, hit)
+        }
+      }
+      else if (action.type === 'talk' && action.talk) {
+        if (action.talk) {
+          let target = this.map.getElementInMap(action.talk.i, action.talk.j)
+          let element = target.element
+          if (target.type === 'character') {
+            element.makeTalk()
+          }
         }
       }
 
@@ -800,6 +834,11 @@ class BootScene extends Phaser.Scene {
     this.talkText.scrollFactorX = 0
     this.talkText.scrollFactorY = 0
     this.talkText.setRotation(Math.PI)
+    this.talkText.setAlpha(0)
+  }
+
+  hideTalkPanel() {
+    this.talkBackground.setAlpha(0)
     this.talkText.setAlpha(0)
   }
 }

@@ -265,7 +265,14 @@ export default class Character {
     } else {
       this.remainingHigh = 0
       this.lastDirection = 0
-      this.sprite.anims.play(this.animations.idle)
+
+      if (this.talking === true) {
+        this.sprite.anims.play(this.animations.talk)
+      }
+      else {
+        this.sprite.anims.play(this.animations.idle)
+      }
+
       this.attrs.restoreProperty('high')
     }
   }
@@ -391,10 +398,14 @@ export default class Character {
         return { type: 'movement' }
       case ORDER_CODES.TALK:
         this.pass(timeFromTransition, cells)
+        let talk = {}
+        talk.i = this.order.i
+        talk.j = this.order.j
+
         this.scene.talkText.setText('Hi, my name is Butt...')
         this.scene.talkBackground.setAlpha(1)
         this.scene.talkText.setAlpha(1)
-        return { type: 'talk' }
+        return { type: 'talk', talk }
       case ORDER_CODES.ATTACK_MELEE:
         this.pass(timeFromTransition, cells)
         let melee = this.getAttackData()

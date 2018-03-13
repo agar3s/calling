@@ -6,7 +6,8 @@ const WIDTH = 16
 
 const MODS = {
   IDLE: 0,
-  GUARD: 1
+  GUARD: 1,
+  TALK: 2
 }
 
 const ENEMY_TYPES = {
@@ -22,18 +23,18 @@ export default class NPC extends Character {
     let enemyProperties = ENEMY_LIST[config.key]
     let level = config.level || 1
 
-    switch(config.key){
+    switch (config.key) {
       case 'devil':
         this.sword_attack = this.scene.sound.add('devil_attack')
-      break
+        break
       case 'monk':
         this.sword_attack = this.scene.sound.add('monk_attack')
-      break
+        break
       case 'eye':
         this.arrow_shot = this.scene.sound.add('eye_attack')
-      break
+        break
     }
-     this.sword_attack.volume = 0.2
+    this.sword_attack.volume = 0.2
     this.arrow_shot.volume = 0.2
 
     let weapon = enemyProperties.getWeapon(level)
@@ -50,10 +51,12 @@ export default class NPC extends Character {
     this.attackType = enemyProperties.attackType
     this.attrs.setProperty('high', 0)
     //this.player.setRangedWeapon(basicBow)
+
+    this.talking = false
   }
 
   getOrder(map, target) {
-    if (this.mod === MODS.IDLE) {
+    if (this.mod === MODS.IDLE || this.mod === MODS.TALK) {
       return this.assignOrder({ code: ORDER_CODES.PASS })
     }
     let possibleOrders = []
@@ -112,6 +115,17 @@ export default class NPC extends Character {
     this.sprite.anims.play(this.animations.guard)
   }
 
+  makeTalk() {
+    this.mod = MODS.TALK
+    this.talking = true
+    this.sprite.anims.play(this.animations.talk)
+  }
+
+  makeShutup() {
+    this.mod = MODS.IDLE
+    this.talking = false
+    this.sprite.anims.play(this.animations.idle)
+  }
 }
 
 const ENEMY_LIST = {
@@ -124,13 +138,13 @@ const ENEMY_LIST = {
       return level + 10
     },
     getStrength: (level) => {
-      return level*0.9 + 1
+      return level * 0.9 + 1
     },
     getDexterity: (level) => {
-      return ~~(level*0.5 + 1)
+      return ~~(level * 0.5 + 1)
     },
     getIntelligence: (level) => {
-      return ~~(level*0.3 + 1)
+      return ~~(level * 0.3 + 1)
     }
   },
   'monk': {
@@ -145,10 +159,10 @@ const ENEMY_LIST = {
       return ~~(level * 1.1) + 1
     },
     getDexterity: (level) => {
-      return level*0.8 + 1
+      return level * 0.8 + 1
     },
     getIntelligence: (level) => {
-      return ~~(level*0.5 + 1)
+      return ~~(level * 0.5 + 1)
     }
   },
   'eye': {
@@ -163,7 +177,7 @@ const ENEMY_LIST = {
       return ~~(level * 0.5) + 1
     },
     getDexterity: (level) => {
-      return level*1.2 + 1
+      return level * 1.2 + 1
     },
     getIntelligence: (level) => {
       return level * 1.2
