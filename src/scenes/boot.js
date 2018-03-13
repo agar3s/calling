@@ -402,26 +402,39 @@ class BootScene extends Phaser.Scene {
     let spot = this.map.getNextAvailableSpot()
     this.player.futurePosition.i = spot.i
     this.player.futurePosition.j = spot.j
-    this.player.position.j = spot.j
-    this.player.position.j = spot.j
+    this.player.position.i = 0
+    this.player.position.j = 0
     this.player.lastDirection = 0
     this.player.attrs.setProperty('high', 0)
     this.player.attrs.updateStrength(2)
     this.player.attrs.updateDexterity(2)
     this.player.attrs.updateIntelligence(2)
-    this.player.fixPositionToGrid()
     this.player.attrs.restoreProperty('hp')
+    this.drawHp()
+    this.map.updateCharacterLocation(this.player)
+    this.player.updateToFuturePosition()
+    this.player.fixPositionToGrid()
+    this.player.update(1)
 
+    console.log('new position', this.player.attrs.getProperty('hp'))
+    console.log('new percentage', this.player.attrs.getPropertyPercentage('hp'))
+    console.log('raw data', this.player.attrs.hp)
   }
 
   upgradePlayer() {
     let spot = this.map.getNextAvailableSpot()
-    this.player.position.i = spot.i
-    this.player.position.j = spot.j
+    this.player.futurePosition.i = spot.i
+    this.player.futurePosition.j = spot.j
+    this.map.updateCharacterLocation(this.player)
+    this.player.updateToFuturePosition()
     this.player.fixPositionToGrid()
+    this.player.update(1)
+    console.log(this.player)
+    console.log('new position', this.player.position, spot)
   }
 
   loadDungeon() {
+    this.map.emptyElements()
     this.map.regenerateSpots()
     this.npcs.forEach(npc => npc.destroy())
     this.npcs = []
@@ -431,7 +444,8 @@ class BootScene extends Phaser.Scene {
     let monsterType = ['devil', 'devil', 'monk', 'monk', 'eye'][~~(Math.random() * 5)]
     this.dungeonLevel++
 
-    for (var i = 0; i < (this.dungeonLevel + 5); i++) {
+    //for (var i = 0; i < (this.dungeonLevel + 5); i++) {
+    for (var i = 0; i < 1; i++) {
       let pos = this.map.getNextAvailableSpot()
       let npc = new NPC({
         scene: this,
@@ -692,8 +706,8 @@ class BootScene extends Phaser.Scene {
           this.cameras.main.fade(2000)
           setTimeout(() => {
             this.cameras.main._fadeAlpha = 0
-            this.resetPlayer()
             this.loadDungeon()
+            this.resetPlayer()
           }, 2500)
         } else {
           this.cameras.main.flash(60, 0.9, 0.1, 0.1)
@@ -705,8 +719,8 @@ class BootScene extends Phaser.Scene {
           this.cameras.main.fade(1000)
           setTimeout(() => {
             this.cameras.main._fadeAlpha = 0
-            this.upgradePlayer()
             this.loadDungeon()
+            this.upgradePlayer()
           }, 1200)
 
         }
