@@ -391,7 +391,7 @@ export default class Character {
         return { type: 'movement' }
       case ORDER_CODES.TALK:
         this.pass(timeFromTransition, cells)
-        this.scene.talkText.setText('Coma mierda!!!')
+        this.scene.talkText.setText('Hi, my name is Butt...')
         this.scene.talkBackground.setAlpha(1)
         this.scene.talkText.setAlpha(1)
         return { type: 'talk' }
