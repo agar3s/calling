@@ -56,6 +56,7 @@ class BootScene extends Phaser.Scene {
     this.load.spritesheet('laser', '../assets/laser.png', { frameWidth: 16, frameHeight: 16 })
     this.load.spritesheet('player', '../assets/player_ss2.png', { frameWidth: 16, frameHeight: 16 })
     this.load.bitmapFont('kenney', '../assets/fonts/KenneyBlocks.png', '../assets/fonts/KenneyBlocks.xml')
+    this.load.bitmapFont('kenney_16', '../assets/fonts/KenneyBlocks_16.png', '../assets/fonts/KenneyBlocks_16.xml')
 
     // load sfx
     this.load.audio('arrow_shot', '../assets/arrow_shot.ogg')
@@ -376,26 +377,7 @@ class BootScene extends Phaser.Scene {
     columns.scrollFactorX = 2
 
     // add the UI elements
-    this.bowIcon = this.add.sprite(TS, TS, 'ui_actions')
-    this.bowIcon.scrollFactorX = 0
-    this.bowIcon.scrollFactorY = 0
-    // this.bowIcon.setOrigin(0, 0)
-    this.bowIcon.setScale(SCALE)
-    this.bowIcon.setFrame(0)
-
-    this.swordIcon = this.add.sprite(this.bowIcon.x + this.bowIcon.width + TS, this.bowIcon.y, 'ui_actions')
-    this.swordIcon.scrollFactorX = 0
-    this.swordIcon.scrollFactorY = 0
-    // this.swordIcon.setOrigin(0, 0)
-    this.swordIcon.setScale(SCALE)
-    this.swordIcon.setFrame(2)
-
-    this.talkIcon = this.add.sprite(this.swordIcon.x + this.swordIcon.width + TS, this.bowIcon.y, 'ui_actions')
-    this.talkIcon.scrollFactorX = 0
-    this.talkIcon.scrollFactorY = 0
-    // this.talkIcon.setOrigin(0, 0)
-    this.talkIcon.setScale(SCALE)
-    this.talkIcon.setFrame(4)
+    this.createGUI(TS, SCALE)
   }
 
   resetPlayer() {
@@ -525,6 +507,7 @@ class BootScene extends Phaser.Scene {
         this.cursor.move(1, -1)
       } else if (this.control.isTalk()) {
         if (this.cursor.isTalkMode()) {
+          this.talkBackground.setAlpha(1)
           this.setOrder(ORDER_CODES.TALK)
           this.cursor.hide()
         } else {
@@ -557,6 +540,7 @@ class BootScene extends Phaser.Scene {
           this.showCursor(this.player.attrs.getProperty('rangedRange'), this.cursor.MODES.RANGED)
         }
       } else if (this.control.isCancel()) {
+        this.setActionIconsDefault()
         this.cursor.hide()
         this.delayTransition(STATUS.WAITING, 200)
         actionTaken = false
@@ -594,9 +578,7 @@ class BootScene extends Phaser.Scene {
     this.cursor.setAnchor(this.player.position.i, this.player.position.j, range, type)
 
     // reset the action icons when the player changes the current one
-    this.talkIcon.setFrame(4)
-    this.swordIcon.setFrame(2)
-    this.bowIcon.setFrame(0)
+    this.setActionIconsDefault()
 
     switch (type) {
       case this.cursor.MODES.TALK:
@@ -654,9 +636,7 @@ class BootScene extends Phaser.Scene {
     this.status = STATUS.TRANSITION
 
     // reset the UI icons after an action takes effect
-    this.talkIcon.setFrame(4)
-    this.swordIcon.setFrame(2)
-    this.bowIcon.setFrame(0)
+    this.setActionIconsDefault()
   }
 
   endTurn(dt) {
@@ -786,6 +766,50 @@ class BootScene extends Phaser.Scene {
     setTimeout(() => {
       message.destroy()
     }, time)
+  }
+
+  // resets the action icons when the player changes the current one
+  setActionIconsDefault() {
+    this.talkIcon.setFrame(4)
+    this.swordIcon.setFrame(2)
+    this.bowIcon.setFrame(0)
+  }
+
+  // creates the game objects that will be part of the GUI
+  createGUI(TS, SCALE) {
+    this.bowIcon = this.add.sprite(TS, TS, 'ui_actions')
+    this.bowIcon.scrollFactorX = 0
+    this.bowIcon.scrollFactorY = 0
+    this.bowIcon.setScale(SCALE)
+    this.bowIcon.setFrame(0)
+
+    this.swordIcon = this.add.sprite(this.bowIcon.x + this.bowIcon.width + TS, this.bowIcon.y, 'ui_actions')
+    this.swordIcon.scrollFactorX = 0
+    this.swordIcon.scrollFactorY = 0
+    this.swordIcon.setScale(SCALE)
+    this.swordIcon.setFrame(2)
+
+    this.talkIcon = this.add.sprite(this.swordIcon.x + this.swordIcon.width + TS, this.bowIcon.y, 'ui_actions')
+    this.talkIcon.scrollFactorX = 0
+    this.talkIcon.scrollFactorY = 0
+    this.talkIcon.setScale(SCALE)
+    this.talkIcon.setFrame(4)
+
+    this.talkBackground = this.add.image(0, this.sys.game.config.height - TS, 'dialogue_box')
+    this.talkBackground.setOrigin(0, 0.5)
+    this.talkBackground.scrollFactorX = 0
+    this.talkBackground.scrollFactorY = 0
+    this.talkBackground.setAlpha(0)
+
+    this.talkText = this.add.bitmapText(
+      this.talkBackground.x + 16,
+      this.talkBackground.y,
+      'kenney_16', '...', 16)
+    this.talkText.setOrigin(0, 0.6)
+    this.talkText.scrollFactorX = 0
+    this.talkText.scrollFactorY = 0
+    this.talkText.setRotation(Math.PI)
+    this.talkText.setAlpha(0)
   }
 }
 

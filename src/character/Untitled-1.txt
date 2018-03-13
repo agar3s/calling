@@ -8,7 +8,7 @@ const MODES = {
   DASH: 3
 }
 
-const COLORS = [0x6cd947, 0xdc534b, 0x31a2f2]
+const COLORS = [0x002266, 0x660022, 0x226600]
 export default class Cursor {
   constructor(config) {
     this.show = false
@@ -18,7 +18,9 @@ export default class Cursor {
     this.xOffset = config.xOffset
     this.yOffset = config.yOffset
 
-    this.square = config.scene.add.graphics(0, 0)
+    this.square = config.scene.add.sprite(0, 0, 'ui_info')
+    this.square.setScale(SCALE)
+    this.square.setFrame(5)
     this.range = 1
     this.anchor = { i: 0, j: 0 }
     this.MODES = MODES
@@ -26,15 +28,19 @@ export default class Cursor {
   }
 
   hide() {
-    this.square.clear()
+    // this.square.clear()
+    this.square.alpha = 0
   }
 
   draw() {
     let i = this.position.i
     let j = this.position.j
-    this.square.clear()
-    this.square.lineStyle(2, COLORS[this.mode], 1)
-    this.square.strokeRect(i * SCALE * WIDTH + 1, j * SCALE * WIDTH + 1, SCALE * WIDTH - 2, SCALE * WIDTH - 2)
+    // this.square.clear()
+    // this.square.lineStyle(1, COLORS[this.mode], 1)
+    // this.square.strokeRect(i*SCALE*WIDTH + 1, j*SCALE*WIDTH + 1, SCALE*WIDTH - 2, SCALE*WIDTH - 2)
+    this.square.setFrame(this.mode)
+    this.x = 100
+    this.y = 100
   }
 
   setRange(range) {
