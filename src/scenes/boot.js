@@ -45,6 +45,7 @@ class BootScene extends Phaser.Scene {
     this.load.image('bg_walls', '../assets/bg_walls.png')
     this.load.image('bg_columns', '../assets/bg_columns.png')
 
+    this.load.image('dialogue_box', '../assets/ui_dialogue-box.png')
     this.load.spritesheet('devil', '../assets/devil_ss.png', { frameWidth: 16, frameHeight: 16 })
     this.load.spritesheet('monk', '../assets/monk_ss.png', { frameWidth: 16, frameHeight: 16 })
     this.load.spritesheet('eye', '../assets/eye_ss.png', { frameWidth: 16, frameHeight: 16 })
@@ -57,11 +58,11 @@ class BootScene extends Phaser.Scene {
     this.load.bitmapFont('kenney', '../assets/fonts/KenneyBlocks.png', '../assets/fonts/KenneyBlocks.xml')
 
     // load sfx
-    this.load.audio('arrow_shot', '../assets/arrow_shot.ogg');
-    this.load.audio('sword_attack', '../assets/sword_attack.ogg');
-    this.load.audio('devil_attack', '../assets/devil_attack.ogg');
-    this.load.audio('monk_attack', '../assets/monk_attack.ogg');
-    this.load.audio('eye_attack', '../assets/eye_attack.ogg');
+    this.load.audio('arrow_shot', '../assets/arrow_shot.ogg')
+    this.load.audio('sword_attack', '../assets/sword_attack.ogg')
+    this.load.audio('devil_attack', '../assets/devil_attack.ogg')
+    this.load.audio('monk_attack', '../assets/monk_attack.ogg')
+    this.load.audio('eye_attack', '../assets/eye_attack.ogg')
   }
 
   create() {
@@ -73,7 +74,7 @@ class BootScene extends Phaser.Scene {
     this.xOffset = xOffset
     this.yOffset = yOffset
 
-    let walls = this.add.tileSprite(10*32, 6*32, 35*32*2, 40 * 32, 'bg_walls')
+    let walls = this.add.tileSprite(10 * 32, 6 * 32, 35 * 32 * 2, 40 * 32, 'bg_walls')
     walls.scrollFactorX = 0.5
 
     this.map = new Map({
@@ -369,13 +370,35 @@ class BootScene extends Phaser.Scene {
     this.cameras.main.shake(100,0.003)
     */
 
-    let columns = this.add.tileSprite(35*32, 0, 35 * 32 * 2, 40 * 32, 'bg_columns')
+    let columns = this.add.tileSprite(35 * 32, 0, 35 * 32 * 2, 40 * 32, 'bg_columns')
 
     columns.setAlpha(0.5)
     columns.scrollFactorX = 2
+
+    // add the UI elements
+    this.bowIcon = this.add.sprite(TS, TS, 'ui_actions')
+    this.bowIcon.scrollFactorX = 0
+    this.bowIcon.scrollFactorY = 0
+    // this.bowIcon.setOrigin(0, 0)
+    this.bowIcon.setScale(SCALE)
+    this.bowIcon.setFrame(0)
+
+    this.swordIcon = this.add.sprite(this.bowIcon.x + this.bowIcon.width + TS, this.bowIcon.y, 'ui_actions')
+    this.swordIcon.scrollFactorX = 0
+    this.swordIcon.scrollFactorY = 0
+    // this.swordIcon.setOrigin(0, 0)
+    this.swordIcon.setScale(SCALE)
+    this.swordIcon.setFrame(2)
+
+    this.talkIcon = this.add.sprite(this.swordIcon.x + this.swordIcon.width + TS, this.bowIcon.y, 'ui_actions')
+    this.talkIcon.scrollFactorX = 0
+    this.talkIcon.scrollFactorY = 0
+    // this.talkIcon.setOrigin(0, 0)
+    this.talkIcon.setScale(SCALE)
+    this.talkIcon.setFrame(4)
   }
 
-  resetPlayer () {
+  resetPlayer() {
     let spot = this.map.getNextAvailableSpot()
     this.player.futurePosition.i = spot.i
     this.player.futurePosition.j = spot.j
@@ -391,24 +414,24 @@ class BootScene extends Phaser.Scene {
 
   }
 
-  upgradePlayer () {
+  upgradePlayer() {
     let spot = this.map.getNextAvailableSpot()
     this.player.position.i = spot.i
     this.player.position.j = spot.j
     this.player.fixPositionToGrid()
   }
 
-  loadDungeon () {
+  loadDungeon() {
     this.map.regenerateSpots()
-    this.npcs.forEach(npc=>npc.destroy())
+    this.npcs.forEach(npc => npc.destroy())
     this.npcs = []
-    this.projectiles.forEach(projectile=>projectile.destroy())
+    this.projectiles.forEach(projectile => projectile.destroy())
     this.projectiles = []
 
-    let monsterType = ['devil', 'devil', 'monk', 'monk', 'eye'][~~(Math.random()*5)]
+    let monsterType = ['devil', 'devil', 'monk', 'monk', 'eye'][~~(Math.random() * 5)]
     this.dungeonLevel++
 
-    for (var i = 0; i<(this.dungeonLevel+5); i++) {
+    for (var i = 0; i < (this.dungeonLevel + 5); i++) {
       let pos = this.map.getNextAvailableSpot()
       let npc = new NPC({
         scene: this,
@@ -555,6 +578,23 @@ class BootScene extends Phaser.Scene {
   showCursor(range, type) {
     this.delayTransition(STATUS.TARGETING, 150)
     this.cursor.setAnchor(this.player.position.i, this.player.position.j, range, type)
+
+    // reset the action icons when the player changes the current one
+    this.talkIcon.setFrame(4)
+    this.swordIcon.setFrame(2)
+    this.bowIcon.setFrame(0)
+
+    switch (type) {
+      case this.cursor.MODES.TALK:
+        this.talkIcon.setFrame(5)
+        break;
+      case this.cursor.MODES.MELEE:
+        this.swordIcon.setFrame(3)
+        break;
+      case this.cursor.MODES.RANGED:
+        this.bowIcon.setFrame(1)
+        break;
+    }
   }
 
   delayTransition(newStatus, delayTime) {
@@ -598,6 +638,11 @@ class BootScene extends Phaser.Scene {
 
     this.turnTransition = TIME_TO_ANIMATE
     this.status = STATUS.TRANSITION
+
+    // reset the UI icons after an action takes effect
+    this.talkIcon.setFrame(4)
+    this.swordIcon.setFrame(2)
+    this.bowIcon.setFrame(0)
   }
 
   endTurn(dt) {
@@ -645,24 +690,24 @@ class BootScene extends Phaser.Scene {
       if (element.isDead()) {
         if (element === this.player) {
           this.cameras.main.fade(2000)
-          setTimeout(()=>{
+          setTimeout(() => {
             this.cameras.main._fadeAlpha = 0
             this.resetPlayer()
             this.loadDungeon()
-          },2500)
+          }, 2500)
         } else {
           this.cameras.main.flash(60, 0.9, 0.1, 0.1)
           this.cameras.main.shake(60, 0.003)
           this.destroyCharacter(element)
         }
         // check index before destroy... or update last indexes
-        if(this.npcs.length===0) {
+        if (this.npcs.length === 0) {
           this.cameras.main.fade(1000)
-          setTimeout(()=>{
+          setTimeout(() => {
             this.cameras.main._fadeAlpha = 0
             this.upgradePlayer()
             this.loadDungeon()
-          },1200)
+          }, 1200)
 
         }
       }
