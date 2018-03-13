@@ -3,6 +3,7 @@ import map02 from './map02'
 import map03 from './map03'
 import map04 from './map04'
 import map05 from './map05'
+import map06 from './map06'
 export default {
-  level1: [map01, map02, map03, map04, map05]
+  level1: [map01, map02, map03, map04, map06]
 }
